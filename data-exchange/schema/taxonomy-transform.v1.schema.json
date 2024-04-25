@@ -1,0 +1,42 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "title": "Taxonomy Classifier Transformations",
+    "description": "Describes how to turn one set of taxonomy classifiers into another.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [],
+    "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"}
+    },
+    "$defs": {
+        "Comment": {
+            "title": "Author Comment",
+            "description": "Document author comments.",
+            "oneOf": [
+                {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 4000
+                },
+                {
+                    "type": "array",
+                    "minLength": 0,
+                    "maxLength": 100,
+                    "items": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 4000
+                    }
+                }
+            ]
+        },
+        "Schema": {
+            "title": "Schema Version",
+            "description": "Data exchange schema format.",
+            "type": "string",
+            "format": "url",
+            "minLength": "6",
+            "maxLength": "2000"
+        }
+    }
+}
