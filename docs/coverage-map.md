@@ -31,17 +31,17 @@ For example:
 * **test-type**: could have known values 'functional', 'performance', 'longevity', 'end-to-end', 'smoke'.
 * **environment**: could have known values 'firefox' and 'chrome', or maybe 'android' and 'ios'.  As a detail, it would only apply to certain test runs, rather than the whole test case.
 
-### Category Set
-
-A *category set* is similar to a Category, but allows zero or more values.  The category set may include extra rules for values in the set, such as exclusionary values.
-
 ### Label
 
 A *label* refers to a named item, and a value for the item.  The label does not define a list of allowed values.
 
-### Label Set
+### Sets of Values
 
-### Tag Set
+In addition to the category and label, a classifier can mark itself as a 'set'.  Sets follow the same rules as the general type, but can include zero or more distinct values.
+
+Set may include extra rules for values in the set, such as exclusionary values.  Additionally, a set can contain rules for how to manage hierarchial sets.  Does the child test object include all the parent values, or does it remain distinctly managed?  A test object may define that it omits a value, to allow removing items from its classifier.
+
+To replicate the concept of a 'tag', you can use a label set.
 
 ### Meta-data
 

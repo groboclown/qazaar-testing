@@ -1,42 +1,224 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
-    "title": "Taxonomy Classifier Transformations",
-    "description": "Describes how to turn one set of taxonomy classifiers into another.",
-    "type": "object",
-    "additionalProperties": false,
-    "required": [],
-    "properties": {
-        "$comment": {"$ref": "#/$defs/Comment"}
-    },
-    "$defs": {
-        "Comment": {
-            "title": "Author Comment",
-            "description": "Document author comments.",
-            "oneOf": [
-                {
-                    "type": "string",
-                    "minLength": 0,
-                    "maxLength": 4000
-                },
-                {
-                    "type": "array",
-                    "minLength": 0,
-                    "maxLength": 100,
-                    "items": {
-                        "type": "string",
-                        "minLength": 0,
-                        "maxLength": 4000
-                    }
-                }
-            ]
-        },
-        "Schema": {
-            "title": "Schema Version",
-            "description": "Data exchange schema format.",
-            "type": "string",
-            "format": "url",
-            "minLength": "6",
-            "maxLength": "2000"
-        }
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "title": "Taxonomy Classifier Transformations",
+  "description": "Describes how to turn one set of taxonomy classifiers into another.  STATUS: still filling out.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "transforms"
+  ],
+  "properties": {
+    "$comment": {"$ref": "#/$defs/Comment"},
+    "$comments": {"$ref": "#/$defs/CommentList"},
+    "$schema": {"$ref": "#/$defs/Schema"},
+    "sources": {"$ref": "#/$defs/DocumentSources"},
+    "transforms": {
+      "title": "Taxonomy Transformation List",
+      "description": "Collection of taxonomy transformations.  If required, additional transforms should live in adjacent documents.",
+      "type": "array",
+      "minLength": 0,
+      "maxLength": 10000,
+      "items": {"$ref": "#/$defs/Transform"}
     }
+  },
+  "$defs": {
+    "Transform": {
+      "title": "Taxonomy Transformation",
+      "description": "Transformation operation for a taxonomy classifier set.",
+      "type": "object",
+      "required": [
+        "from",
+        "to"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+        "from": {"$ref": "#/$defs/TransformInput"},
+        "to": {
+          "title": "Transformation Output List",
+          "description": "The output for the transformation.",
+          "type": "array",
+          "items": {"$ref": "#/$defs/TransformOutput"}
+        }
+      }
+    },
+    "TransformInput": {
+      "title": "Transform Input",
+      "description": "The input taxonomy matcher.",
+      "type": "object",
+      "required": [
+        "matchType"
+      ],
+      "additionalProperties": false,
+      "$comment": "This should probably use a 'oneOf' conditional on the 'matchType', but that introduces conditional schema, which makes automated construction difficult in some languages.",
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+        "matchType": {
+          "title": "Matching Operation",
+          "description": "The kind of matching operation encapsulated by this item. 'and', 'or', and 'not' use the 'sub' property to define the sub-inputs.  'one-of', 'all-of', and 'includes' use the 'classifier' to indicate the name of the classifier matched, and 'values' for the list of items to compare.",
+          "type": "string",
+          "enum": [
+            "and",
+            "or",
+            "not",
+            "classifier",
+            "one-of",
+            "all-of",
+            "includes",
+            "equals"
+          ]
+        },
+        "sub": {
+          "title": "Child Matchers",
+          "description": "A collection of matchers following the rules of the matchType.  This applies only to matchType of 'and', 'or', and 'not'.  'not' values should contain exactly 1 entry.",
+          "type": "array",
+          "minLength": 1,
+          "maxLength": 100,
+          "item": {"$ref": "#/$refs/TransformInput"}
+        },
+        "classifier": {
+          "title": "Classifier Name",
+          "description": "Name of the classifier to match against.  Does not apply to the 'and', 'or', and 'not' match types.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "classifierPattern": {
+          "title": "Classifier Name Pattern",
+          "description": "Regular expression pattern for matching the classifier name.  Follows the same general rules as 'classifier'.",
+          "type": "string",
+          "format": "regex",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "values": {
+          "title": "Matching Classifier Values",
+          "description": "Values that, if matched, trigger the output.",
+          "type": "array",
+          "minLength": 1,
+          "maxLength": 4000,
+          "items": {
+            "title": "Matching Classifier Value",
+            "description": "One of the values to cause the trigger to match.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        },
+        "valuePatterns": {
+          "title": "Matching Classifier Value Patterns",
+          "description": "Value regular expressions that, if matched, trigger the output.",
+          "type": "array",
+          "minLength": 1,
+          "maxLength": 4000,
+          "items": {
+            "title": "Matching Classifier Value Pattern",
+            "description": "One of the values to cause the trigger to match.",
+            "type": "string",
+            "format": "regex",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        }
+      }
+    },
+    "TransformOutput": {
+      "title": "Transform Output",
+      "description": "A single transformation output value.",
+      "type": "object",
+      "required": [],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"}
+      }
+    },
+    "Comment": {
+      "title": "Author Comment",
+      "description": "Document author comment text.",
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 4000
+    },
+    "CommentList": {
+      "title": "Author Comment List",
+      "description": "List of document author comments.",
+      "type": "array",
+      "minLength": 0,
+      "maxLength": 100,
+      "items": {"$ref": "#/$defs/Comment"}
+    },
+    "Schema": {
+      "title": "Schema Version",
+      "description": "Data exchange schema format.",
+      "type": "string",
+      "format": "url",
+      "minLength": "6",
+      "maxLength": "2000"
+    },
+    "Id": {
+      "title": "Unique Identifier",
+      "description": "Unique identifying string for the item.  These should be ASCII alpha-numeric + simple separators.",
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_.,:;+$?/#%&*-]+$",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "DocumentSources": {
+      "title": "Document Sources",
+      "description": "Sources that contained the original definitions.  A tool collected those descriptions into this document.",
+      "type": "array",
+      "minLength": 0,
+      "maxLength": 4000,
+      "items": {"$ref": "#/$defs/SourceLocation"}
+    },
+    "SourceLocation": {
+      "title": "Source Location",
+      "description": "Pointer to the location of the source.  Due to the prevalence of this object, property names use a truncated form to shrink file sizes.",
+      "type": "object",
+      "required": [
+        "rep",
+        "loc"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "rep": {
+          "title": "Repository Category",
+          "description": "General repository category containing the source.  This might be 'git' if stored in a Git repository, or 'aws-s3', if stored in an Amazon S3 key store, or 'intranet' if stored in an Intranet source.  The different programs may have their own requirements for this value.  It does not define a location within the repository, though.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "loc": {
+          "title": "Source Resource",
+          "description": "The resource identifier within the 'repo'.  Depending on the repo type, this most likely has a required format for that repository.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8000
+        },
+        "ver": {
+          "title": "Version",
+          "description": "An identifier to reference the unique version of the source, as dictated by the repository type.  This might a commit id, or document revision, or a date-time stamp.  The repository type may not have the ability to retrieve this version (someone may have deleted it, or the repository does not support versioning).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "a": {
+          "title": "Anchor",
+          "description": "A location within the source.  This depends upon the source type; it might be an HTML anchor tag, or a paragraph title, or a function name, or a line number, or an opcode index.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      }
+    }
+  }
 }

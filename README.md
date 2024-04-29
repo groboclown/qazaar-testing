@@ -24,6 +24,8 @@ If the tool does its job right, it can then examine the source code for changes 
 
 Qazaar concerns itself first and foremost with the definition of data exchange formats.  With a single format to contain all the various forms of information, other tooling can build upon it to generate flexible capabilities.
 
+Secondly, Qazaar attempts to define many different ways functional requirements express themselves, along with how tests indicate which requirements they cover.  The combination of these two allow for better understanding what has coverage and what the tests miss.
+
 
 ## Forcing Functions
 

@@ -1,42 +1,214 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
-    "title": "Taxonomy Classifiers",
-    "description": "Description of the classifiers used for a hierarchy of test objects.",
-    "type": "object",
-    "additionalProperties": false,
-    "required": [],
-    "properties": {
-        "$comment": {"$ref": "#/$defs/Comment"}
-    },
-    "$defs": {
-        "Comment": {
-            "title": "Author Comment",
-            "description": "Document author comments.",
-            "oneOf": [
-                {
-                    "type": "string",
-                    "minLength": 0,
-                    "maxLength": 4000
-                },
-                {
-                    "type": "array",
-                    "minLength": 0,
-                    "maxLength": 100,
-                    "items": {
-                        "type": "string",
-                        "minLength": 0,
-                        "maxLength": 4000
-                    }
-                }
-            ]
-        },
-        "Schema": {
-            "title": "Schema Version",
-            "description": "Data exchange schema format.",
-            "type": "string",
-            "format": "url",
-            "minLength": "6",
-            "maxLength": "2000"
-        }
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "title": "Taxonomy Classifiers",
+  "description": "Description of the classifiers used for a hierarchy of test objects.  STATUS: ready for review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "classifiers"
+  ],
+  "properties": {
+    "$comment": {"$ref": "#/$defs/Comment"},
+    "$comments": {"$ref": "#/$defs/CommentList"},
+    "$schema": {"$ref": "#/$defs/Schema"},
+    "sources": {"$ref": "#/$defs/DocumentSources"},
+    "classifiers": {
+      "title": "Taxonomy Classifier List",
+      "description": "List of taxonomy classifiers supported.  If required, additional classifiers may live in adjacent documents.",
+      "type": "array",
+      "minLength": 0,
+      "maxLength": 10000,
+      "items": {"$ref": "Classifier"}
     }
+  },
+  "$defs": {
+    "Classifier": {
+      "title": "Taxonomy Classifier",
+      "description": "A single classifier for a test object.  Note that systems that record the values, it should trim surrounding whitespace, and condense internal whitespace to a single value (so 'A  B   C' becomes 'A B C').",
+      "type": "object",
+      "required": ["type", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+        "type": {
+          "title": "Classifier Type",
+          "description": "The type of classifier defined by this definition.",
+          "type": "string",
+          "enum": [
+            "category",
+            "label"
+          ]
+        },
+        "name": {
+          "title": "Classifier Name",
+          "description": "Unique identifier for the classifier.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "set": {
+          "title": "Supports Multiple Values",
+          "description": "If true, the test objects with this classifier may contain multiple, unique values.",
+          "type": "boolean",
+          "default": false
+        },
+        "enum": {
+          "title": "Allowed Category Values",
+          "description": "Allowed values for the category.  Only categories may use this.  While the allowed list of values has a maximum, projects that require a larger number of values should instead consider using a label with a value pattern instead.",
+          "type": "array",
+          "minLength": 1,
+          "maxLength": 10000,
+          "items": {
+            "title": "Category Value",
+            "description": "Allowable text for a text object category classifier.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "caseSensitive": {
+          "title": "Value Case Sensitivity",
+          "description": "Determines whether the systems interpret values exactly as written, or if it should ignore the case.  By default, all classifiers ignore value case.  Case sensitivity should, where possible, ignore case for the complete UTF characters.",
+          "type": "boolean",
+          "default": false
+        },
+        "constraints": {
+          "title": "Limitations on Values",
+          "description": "A list of limitations for the allowed values for this classifier.  This only applies to 'label' types, as 'category' have an explicit list of allowed values.  If the list contains multiple constraints, the classifier value must apply to all of them.",
+          "type": "array",
+          "minLength": 0,
+          "maxLength": 1000,
+          "items": {"$ref": "ValueConstraint"}
+        }
+      }
+    },
+    "ValueConstraint": {
+      "title": "Value Constraint",
+      "description": "A single restriction on the allowed value text.",
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+        "type": {
+          "title": "Value Constraint Type",
+          "description": "The kind of constraint to apply.",
+          "type": "string",
+          "enum": [
+            "pattern",
+            "format",
+            "length",
+            "value-range"
+          ]
+        },
+        "pattern": {
+          "title": "Value Pattern",
+          "description": "Regular expression pattern the classifier's values must match.",
+          "type": "string",
+          "format": "regex",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "format": {
+          "title": "Value Format",
+          "description": "A pre-defined value format.  While a few formats should exist built-in, no explicit list exists at this time.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "minimum": {
+          "title": "Minimum",
+          "description": "The minimum value (length or value-range).",
+          "type": "numeric",
+          "minimum": -1.0e10000,
+          "maximum": 1.0e10000
+        },
+        "maximum": {
+          "title": "Maximum",
+          "description": "The maximum value (length or value-range).",
+          "type": "numeric",
+          "minimum": -1.0e10000,
+          "maximum": 1.0e10000
+        }
+      }
+    },
+    "Comment": {
+      "title": "Author Comment",
+      "description": "Document author comment text.",
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 4000
+    },
+    "CommentList": {
+      "title": "Author Comment List",
+      "description": "List of document author comments.",
+      "type": "array",
+      "minLength": 0,
+      "maxLength": 100,
+      "items": {"$ref": "#/$defs/Comment"}
+    },
+    "Schema": {
+      "title": "Schema Version",
+      "description": "Data exchange schema format.",
+      "type": "string",
+      "format": "url",
+      "minLength": "6",
+      "maxLength": "2000"
+    },
+    "DocumentSources": {
+      "title": "Document Sources",
+      "description": "Sources that contained the original definitions.  A tool collected those descriptions into this document.",
+      "type": "array",
+      "minLength": 0,
+      "maxLength": 4000,
+      "items": {"$ref": "#/$defs/SourceLocation"}
+    },
+    "SourceLocation": {
+      "title": "Source Location",
+      "description": "Pointer to the location of the source.  Due to the prevalence of this object, property names use a truncated form to shrink file sizes.",
+      "type": "object",
+      "required": [
+        "rep",
+        "loc"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "rep": {
+          "title": "Repository Category",
+          "description": "General repository category containing the source.  This might be 'git' if stored in a Git repository, or 'aws-s3', if stored in an Amazon S3 key store, or 'intranet' if stored in an Intranet source.  The different programs may have their own requirements for this value.  It does not define a location within the repository, though.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "loc": {
+          "title": "Source Resource",
+          "description": "The resource identifier within the 'repo'.  Depending on the repo type, this most likely has a required format for that repository.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8000
+        },
+        "ver": {
+          "title": "Version",
+          "description": "An identifier to reference the unique version of the source, as dictated by the repository type.  This might a commit id, or document revision, or a date-time stamp.  The repository type may not have the ability to retrieve this version (someone may have deleted it, or the repository does not support versioning).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "a": {
+          "title": "Anchor",
+          "description": "A location within the source.  This depends upon the source type; it might be an HTML anchor tag, or a paragraph title, or a function name, or a line number, or an opcode index.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      }
+    }
+  }
 }
