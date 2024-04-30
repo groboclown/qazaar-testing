@@ -60,7 +60,7 @@ In some cases, the document may include, or only contain, a summary of test exec
 * Every numeric property must include a minimum and maximum value.  Every string property must include a maximum length.  Every array property must include a maximum length, along with methods for defining how to construct data if the number of items exceeds that length.
 * Date-time information always includes a Timezone value.
 * Instead of using an object with arbitrary property names, the schema should use an array with a `{"key": "", "value": ""}` style approach.  This allows for controlling the size of the object.
-* Where possible, schema types should use the [shared schema](schema/shared.schema.json).  While not referenced directly, the references should instead copy into the schema.
+* Where possible, schema types should use the [shared schema](schema/_shared.schema.json).  While not referenced directly, the references should instead copy into the schema.
 * Object keys should use lower camel case.  This makes using them in programming languages easier.  Meta-data fields should have a `$` prefix.
 * Every object should allow `$comment` and `$comments` fields.  In general it should also allow the `sources` field, to allow linking the item back to where the generating program discovered the value.
 * Every object should mark itself as no additional property.  However, implementations should not fail if the data includes unknown fields, as that allows for better compatibility.

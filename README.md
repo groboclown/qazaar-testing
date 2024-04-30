@@ -27,6 +27,72 @@ Qazaar concerns itself first and foremost with the definition of data exchange f
 Secondly, Qazaar attempts to define many different ways functional requirements express themselves, along with how tests indicate which requirements they cover.  The combination of these two allow for better understanding what has coverage and what the tests miss.
 
 
+## A Use Case
+
+Let's say we have a 3-tier web site (HTML + JavaScript user interface, a server, and a database).  We have a new feature to allow a user to edit their profile to include a bit of flavor text.  This allows users to get to know each other.
+
+With this feature, we introduce some requirements to our product:
+
+* A user can edit their own profile flavor text.  The flavor text can include up to 4,000 characters.
+* Other authenticated users can read the profile flavor text of any other user.
+
+The team reviews these requirements, and decides that this turns into changes to the existing product:
+
+* User Interface Updates:
+    * Add a new Flavor Text text area for Edit Profile actions.
+    * Include the Flavor Text in the data sent to the server on a save action.
+    * Add a new Flavor Text display area to the View Profile page.
+* Server Updates:
+    * Receive the Flavor Text field from Update Profile requests.
+    * Send the Flavor Text field on Get Profile requests.
+* Database Updates:
+    * Add a new text blob column to the User Profile table.
+
+Based on the feature and the requirements, the development team codifies these with:
+
+* Field: User Profile - Flavor Text
+    * Parent Record: UserProfile/username
+    * Data type: text area
+    * Editable: true
+    * Maximum size: 4,000
+    * Edit Access: owner
+    * Read Access: any authorized user
+    * Edit Label Name: "Describe Yourself"
+    * View Label Name: "About Myself"
+
+However, the product already has existing, *cross-cutting* requirements across the product:
+
+* User Interface:
+    * All text areas must include a label, whose value must pull from the supported localized translations.
+        * Codified as: If has "Label", then Value must include localization.
+    * All editable text fields must support Unicode characters.
+        * Codified as: If "Data type" = "text area", then content = Unicode
+    * All text areas must contain zero or more characters, and fewer than *per-field maximum* characters.
+        * Codified as:
+            * If "Data type" = "text area", then field must include 'maximum size' > 0.
+            * If "Data type" = "text area", then UI field includes maximum length = field 'maximum size'.
+    * The user interface must scrub the displayed text to not allow for cross-site scripting (XSS) vulnerabilities.
+        * Codified as: If "Data type" = "text area", then UI escapes characters safe for rendering.
+* Server:
+    * All text fields received must use UTF-8 encoding.
+    * The text fields must not exceed *per-field maximum* characters.
+    * All text sent to the database must use proper parameter SQL commands to avoid SQL injection attacks.
+    * Requests for saving data require *per-request level* authorized access.
+    * Requests for sending data require *per-request level* authorized access.
+    * Requests must respond within 2 seconds under heavy load.
+* Database:
+    * Columns storing more than 2000 Unicode characters must use binary blobs, encoded as UTF-32BE.
+    * Binary blobs must set *per-field maximum* byte count, times 4 (because 4 bytes store 1 32-bit character).
+
+On top of this, the development team has a series of items that it created because of discovered bugs and limitations in the software they depend on:
+
+* All Unicode text must support 32-bit characters, such as emoji.
+    * Codified as: If content = Unicode, then character range = valid unicode characters. (You can find the precise allowable values elsewhere; it's complex)
+* All Unicode text can support up to 4 diacritic marks per displayed glyph.  The base character counts as one character, and each diacritic mark counts as another.
+
+From these various data sources, we can now add meta-data to our tests to see what our tests cover.
+
+
 ## Forcing Functions
 
 This tool came about because, in the opinion of the authors, the state of art for test case management tools revolves around keeping people locked into a single vendor, rather than working with a team's own processes.

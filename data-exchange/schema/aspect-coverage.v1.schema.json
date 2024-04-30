@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "title": "Aspect Coverage",
+  "description": "Describes the required tests needed to cover feature aspects.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema"
+  ],
+  "properties": {
+    "$comment": {"$ref": "#/$defs/Comment"},
+    "$comments": {"$ref": "#/$defs/CommentList"},
+    "$schema": {"$ref": "#/$defs/Schema"},
+    "sources": {"$ref": "#/$defs/DocumentSources"}
+  },
+  "$defs": {
+    "Comment": {
+      "title": "Author Comment",
+      "description": "Document author comment text.",
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 4000
+    },
+    "CommentList": {
+      "title": "Author Comment List",
+      "description": "List of document author comments.",
+      "type": "array",
+      "minLength": 0,
+      "maxLength": 100,
+      "items": {"$ref": "#/$defs/Comment"}
+    },
+    "Schema": {
+      "title": "Schema Version",
+      "description": "Data exchange schema format.",
+      "type": "string",
+      "format": "url",
+      "minLength": "6",
+      "maxLength": "2000"
+    },
+    "DocumentSources": {
+      "title": "Document Sources",
+      "description": "Sources that contained the original definitions.  A tool collected those descriptions into this document.",
+      "type": "array",
+      "minLength": 0,
+      "maxLength": 4000,
+      "items": {"$ref": "#/$defs/SourceLocation"}
+    },
+    "SourceLocation": {
+      "title": "Source Location",
+      "description": "Pointer to the location of the source.  Due to the prevalence of this object, property names use a truncated form to shrink file sizes.",
+      "type": "object",
+      "required": [
+        "rep",
+        "loc"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "rep": {
+          "title": "Repository Category",
+          "description": "General repository category containing the source.  This might be 'git' if stored in a Git repository, or 'aws-s3', if stored in an Amazon S3 key store, or 'intranet' if stored in an Intranet source.  The different programs may have their own requirements for this value.  It does not define a location within the repository, though.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "loc": {
+          "title": "Source Resource",
+          "description": "The resource identifier within the 'repo'.  Depending on the repo type, this most likely has a required format for that repository.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8000
+        },
+        "ver": {
+          "title": "Version",
+          "description": "An identifier to reference the unique version of the source, as dictated by the repository type.  This might a commit id, or document revision, or a date-time stamp.  The repository type may not have the ability to retrieve this version (someone may have deleted it, or the repository does not support versioning).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "a": {
+          "title": "Anchor",
+          "description": "A location within the source.  This depends upon the source type; it might be an HTML anchor tag, or a paragraph title, or a function name, or a line number, or an opcode index.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      }
+    }
+  }
+}
