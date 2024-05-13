@@ -20,6 +20,10 @@
       "minLength": 0,
       "maxLength": 10000,
       "items": {"$ref": "Classifier"}
+    },
+    "labels": {
+      "title": "Taxonomy Label List",
+      "description": "List of taxonomy labels supported."
     }
   },
   "$defs": {

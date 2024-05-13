@@ -63,4 +63,4 @@ In some cases, the document may include, or only contain, a summary of test exec
 * Where possible, schema types should use the [shared schema](schema/_shared.schema.json).  While not referenced directly, the references should instead copy into the schema.
 * Object keys should use lower camel case.  This makes using them in programming languages easier.  Meta-data fields should have a `$` prefix.
 * Every object should allow `$comment` and `$comments` fields.  In general it should also allow the `sources` field, to allow linking the item back to where the generating program discovered the value.
-* Every object should mark itself as no additional property.  However, implementations should not fail if the data includes unknown fields, as that allows for better compatibility.
+* Every object should mark itself as allowing no additional properties (`"additionalProperties": false`).  However, implementations should not fail if the data includes unknown fields, as that allows for better forward compatibility.

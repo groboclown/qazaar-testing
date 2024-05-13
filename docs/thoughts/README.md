@@ -2,6 +2,8 @@
 
 Here, you'll find documentation describing some of the ideas behind Qazaar, the tools included in Qazaar, and the general way it works.
 
+Right now, this folder contains mostly ideas and concepts as they congeal.
+
 ## Qazaar Ideas
 
 [Coverage Map](coverage-map.md) - The basic concept behind the *coverage map*.
