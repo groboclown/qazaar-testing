@@ -15,4 +15,4 @@ The rules (needs a better name) then allows for turning the taxonomy into usable
 
 ## Collecting Documentation
 
-The collected documentation 
+The collected documentation contains tagged values which tooling can then compare against the allowed taxonomy and rules.
