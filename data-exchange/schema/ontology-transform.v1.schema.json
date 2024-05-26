@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema",
-  "title": "Taxonomy Classifier Transformations",
-  "description": "Describes how to turn one set of taxonomy classifiers into another.  STATUS: still filling out.",
+  "title": "Ontology Descriptor Transformations",
+  "description": "Describes how to turn one set of ontology descriptors into another.  STATUS: still filling out.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -14,8 +14,8 @@
     "$schema": {"$ref": "#/$defs/Schema"},
     "sources": {"$ref": "#/$defs/DocumentSources"},
     "transforms": {
-      "title": "Taxonomy Transformation List",
-      "description": "Collection of taxonomy transformations.  If required, additional transforms should live in adjacent documents.",
+      "title": "Ontology Transformation List",
+      "description": "Collection of ontology transformations.  If required, additional transforms should live in adjacent documents.",
       "type": "array",
       "minLength": 0,
       "maxLength": 10000,
@@ -24,8 +24,8 @@
   },
   "$defs": {
     "Transform": {
-      "title": "Taxonomy Transformation",
-      "description": "Transformation operation for a taxonomy classifier set.",
+      "title": "Ontology Transformation",
+      "description": "Transformation operation for a ontology descriptor set.",
       "type": "object",
       "required": [
         "from",
@@ -47,7 +47,7 @@
     },
     "TransformInput": {
       "title": "Transform Input",
-      "description": "The input taxonomy matcher.",
+      "description": "The input ontology matcher.",
       "type": "object",
       "required": [
         "matchType"
@@ -60,13 +60,13 @@
         "sources": {"$ref": "#/$defs/DocumentSources"},
         "matchType": {
           "title": "Matching Operation",
-          "description": "The kind of matching operation encapsulated by this item. 'and', 'or', and 'not' use the 'sub' property to define the sub-inputs.  'one-of', 'all-of', and 'includes' use the 'classifier' to indicate the name of the classifier matched, and 'values' for the list of items to compare.",
+          "description": "The kind of matching operation encapsulated by this item. 'and', 'or', and 'not' use the 'sub' property to define the sub-inputs.  'one-of', 'all-of', and 'includes' use the 'descriptor' to indicate the name of the descriptor matched, and 'values' for the list of items to compare.",
           "type": "string",
           "enum": [
             "and",
             "or",
             "not",
-            "classifier",
+            "descriptor",
             "one-of",
             "all-of",
             "includes",
@@ -81,16 +81,16 @@
           "maxLength": 100,
           "item": {"$ref": "#/$refs/TransformInput"}
         },
-        "classifier": {
+        "descriptor": {
           "title": "Classifier Name",
-          "description": "Name of the classifier to match against.  Does not apply to the 'and', 'or', and 'not' match types.",
+          "description": "Name of the descriptor to match against.  Does not apply to the 'and', 'or', and 'not' match types.",
           "type": "string",
           "minLength": 1,
           "maxLength": 4000
         },
-        "classifierPattern": {
+        "descriptorPattern": {
           "title": "Classifier Name Pattern",
-          "description": "Regular expression pattern for matching the classifier name.  Follows the same general rules as 'classifier'.",
+          "description": "Regular expression pattern for matching the descriptor name.  Follows the same general rules as 'descriptor'.",
           "type": "string",
           "format": "regex",
           "minLength": 1,

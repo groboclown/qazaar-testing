@@ -1,37 +1,40 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema",
-  "title": "Test Description",
-  "description": "Details about test objects, including applicable taxonomy.",
+  "title": "Document Description",
+  "description": "Details about source objects in terms of the ontology.  STATUS: in progress",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "$schema",
-    "testObjects"
+    "documents"
   ],
   "properties": {
     "$comment": {"$ref": "#/$defs/Comment"},
     "$comments": {"$ref": "#/$defs/CommentList"},
     "$schema": {"$ref": "#/$defs/Schema"},
     "sources": {"$ref": "#/$defs/DocumentSources"},
-    "testObjects": {
-      "title": "Test Object Inventory",
-      "description": "List of test objects.",
+    "objects": {
+      "title": "Document Object Inventory",
+      "description": "List of document objects.",
       "type": "array",
       "minLength": 0,
       "maxLength": 10000,
-      "items": {"$ref": "#/$defs/TestObject"}
+      "items": {"$ref": "#/$defs/DocumentObject"}
     }
   },
   "$defs": {
-    "TestObject": {
-      "title": "Test Object Description",
-      "description": "Description for a test object; a unique identifier, location information, and taxonomy.",
+    "DocumentObject": {
+      "title": "Document Object Description",
+      "description": "Description for a document object; a unique identifier, location information, and ontology descriptors.",
       "type": "object",
-      "required": [],
+      "required": ["id", "sources"],
       "additionalProperties": false,
       "properties": {
         "$comment": {"$ref": "#/$defs/Comment"},
-        "$comments": {"$ref": "#/$defs/CommentList"}
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+        "id": {},
+        "descriptors": {}
       }
     },
     "Comment": {
