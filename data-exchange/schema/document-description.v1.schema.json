@@ -1,17 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema",
   "title": "Document Description",
-  "description": "Details about source objects in terms of the ontology.  STATUS: in progress",
+  "description": "Details about source objects in terms of the ontology.  STATUS: ready for review",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "$schema",
-    "documents"
+    "objects"
   ],
   "properties": {
     "$comment": {"$ref": "#/$defs/Comment"},
     "$comments": {"$ref": "#/$defs/CommentList"},
     "$schema": {"$ref": "#/$defs/Schema"},
+    "commonSourceRefs": {"$ref": "#/$defs/CommonDocumentSourceList"},
     "sources": {"$ref": "#/$defs/DocumentSources"},
     "objects": {
       "title": "Document Object Inventory",
@@ -33,8 +34,60 @@
         "$comment": {"$ref": "#/$defs/Comment"},
         "$comments": {"$ref": "#/$defs/CommentList"},
         "sources": {"$ref": "#/$defs/DocumentSources"},
-        "id": {},
-        "descriptors": {}
+        "id": {
+          "title": "Document Object Identifier",
+          "description": "Identifier for the object, unique within the source document.  Where possible, it should be unique across all documents.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^\\S+$"
+        },
+        "descriptors": {
+          "title": "Descriptor List",
+          "description": "List of descriptors assigned to this object.  The list of descriptors must not contain multiple items with the same key, and the values for the key must conform to the document's ontology.",
+          "type": "array",
+          "minLength": 0,
+          "maxLength": 100000,
+          "items": {"$ref": "#/$defs/DocumentDescriptor"}
+        }
+      }
+    },
+    "DocumentDescriptor": {
+      "title": "Document Descriptor",
+      "description": "The ontological descriptor key and associated value.",
+      "type": "object",
+      "required": ["key", "values"],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Descriptor Key",
+          "description": "The descriptor key.  This must match a known ontological descriptor key.",
+          "type": "string"
+        },
+        "values": {
+          "title": "Descriptor Value List",
+          "description": "The descriptor values.  Each entry must conform to the descriptor key's value types.",
+          "minLength": 0,
+          "maxLength": 100000,
+          "items": {
+            "oneOf": [
+              {
+                "title": "Descriptor Numeric Value",
+                "description": "A numeric value.",
+                "type": "number",
+                "minimum": -1e10000,
+                "maximum": 1e10000
+              },
+              {
+                "title": "Descriptor Text Value",
+                "description": "A textual value, either an enumerated or free value.",
+                "type": "string",
+                "minLength": 0,
+                "maxLength": 100000
+              }
+            ]
+          }
+        }
       }
     },
     "Comment": {
@@ -60,19 +113,28 @@
       "minLength": "6",
       "maxLength": "2000"
     },
-    "DocumentSources": {
-      "title": "Document Sources",
-      "description": "Sources that contained the original definitions.  A tool collected those descriptions into this document.",
+    "Id": {
+      "title": "Unique Identifier",
+      "description": "Unique identifying string for the item.  These should be ASCII alpha-numeric + simple separators.",
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_.,:;+$?/#%&*-]+$",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "CommonDocumentSourceList": {
+      "title": "Common Document Source List",
+      "description": "Pool of document source references, which may be referenced from the source locations.",
       "type": "array",
       "minLength": 0,
       "maxLength": 4000,
-      "items": {"$ref": "#/$defs/SourceLocation"}
+      "items": {"$ref": "#/$defs/CommonDocumentSource"}
     },
-    "SourceLocation": {
-      "title": "Source Location",
-      "description": "Pointer to the location of the source.  Due to the prevalence of this object, property names use a truncated form to shrink file sizes.",
+    "CommonDocumentSource": {
+      "title": "Common Document Source",
+      "description": "A shared primary document reference.  Source locations can refer to this document through the identifier, but should also include an anchor.",
       "type": "object",
       "required": [
+        "id",
         "rep",
         "loc"
       ],
@@ -80,6 +142,7 @@
       "properties": {
         "$comment": {"$ref": "#/$defs/Comment"},
         "$comments": {"$ref": "#/$defs/CommentList"},
+        "id": {"$ref": "#/$defs/Id"},
         "rep": {
           "title": "Repository Category",
           "description": "General repository category containing the source.  This might be 'git' if stored in a Git repository, or 'aws-s3', if stored in an Amazon S3 key store, or 'intranet' if stored in an Intranet source.  The different programs may have their own requirements for this value.  It does not define a location within the repository, though.",
@@ -100,7 +163,29 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 200
-        },
+        }
+      }
+    },
+    "DocumentSources": {
+      "title": "Document Sources",
+      "description": "Sources that contained the original definitions.  A tool collected those descriptions into this document.",
+      "type": "array",
+      "minLength": 0,
+      "maxLength": 4000,
+      "items": {"$ref": "#/$defs/SourceLocation"}
+    },
+    "SourceLocation": {
+      "title": "Source Location",
+      "description": "Pointer to the location of the source.  Due to the prevalence of this object, property names use a truncated form to shrink file sizes.  The 'ref' points to a common document source identifier in the commonSourceRefs list.",
+      "type": "object",
+      "required": [
+        "ref"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "ref": {"$ref": "#/$defs/Id"},
         "a": {
           "title": "Anchor",
           "description": "A location within the source.  This depends upon the source type; it might be an HTML anchor tag, or a paragraph title, or a function name, or a line number, or an opcode index.",
