@@ -12,9 +12,78 @@
     "$comments": {"$ref": "#/$defs/CommentList"},
     "$schema": {"$ref": "#/$defs/Schema"},
     "commonSourceRefs": {"$ref": "#/$defs/CommonDocumentSourceList"},
-    "sources": {"$ref": "#/$defs/DocumentSources"}
+    "sources": {"$ref": "#/$defs/DocumentSources"},
+    "groups": {
+      "title": "Self-Organizing Group List",
+      "description": "List of self-organizing group definitions.  If necessary, additional groups may live in accompanying document files.",
+      "type": "array",
+      "minLength": 0,
+      "maxLength": 10000,
+      "items": {"$ref": "#/$defs/Group"}
+    },
+    "rules": {
+      "title": "Rule List",
+      "description": "List of rules.  If necessary, additional rules may live in accompanying document files.",
+      "type": "array",
+      "minLength": 0,
+      "maxLength": 10000,
+      "items": {"$ref": "#/$defs/Rule"}
+    }
   },
   "$defs": {
+    "Group": {
+      "title": "Group",
+      "description": "A self-organizing group definition.",
+      "type": "object",
+      "required": ["sharedValues"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"$ref": "#/$defs/Id"},
+        "variables": {},
+        "matchingDescriptors": {},
+        "sharedValues": {},
+        "alterations": {},
+        "convergences": {
+          "title": "Convergence Implication List",
+          "description": "List of SOG convergence implications.",
+          "type": "array",
+          "minLength": 0,
+          "maxLength": 10000,
+          "items": {"$ref": "#/$defs/ConvergenceImplication"}
+        }
+      }
+    },
+
+    "Rule": {
+      "title": "Rule",
+      "description": "A rule which includes matching descriptors and implications.",
+      "type": "object",
+      "required": ["matchingDescriptors"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"$ref": "#/$defs/Id"},
+        "variables": {},
+        "matchingDescriptors": {},
+        "conformities": {
+          "title": "Conformity Implication List",
+          "description": "List of conformity implications.",
+          "type": "array",
+          "minLength": 0,
+          "maxLength": 10000,
+          "items": {"$ref": "#/$defs/ConformityImplication"}
+        }
+      }
+    },
+
+    "ConvergenceImplication": {
+
+    },
+
+    "ConformityImplication": {
+
+    },
+
+
     "Comment": {
       "title": "Author Comment",
       "description": "Document author comment text.",

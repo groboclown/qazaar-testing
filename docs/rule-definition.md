@@ -28,13 +28,11 @@ A rule first contains a matching collection of descriptors.  This has one or mor
 
 A matching descriptors collection follows basic boolean logic between expressions ('and', 'or', and 'not' operators with grouping).  Each expression matches a specific descriptor key against its value, not against values of other descriptors.
 
-An expression may take the form of "present", meaning that the descriptor has some value assigned to it.  By implication, the 'not' grouping operation means "no value present".
-
 For numeric type values, the allowed operations include only "equal" to a precise value, or "within" a range.  This implies "outside" and "not equal" when used with the 'not' grouping operation.  If a numeric descriptor includes multiple values, then this can also take the form "all within" or "any within", and "equal" here means "any value equal".
 
 Non-numeric values must always take the form of either "contains some", "contains all", or "contains only".  Containment comparison may use equality or a non-backtracking regular expression.
 
-Additionally, because all descriptor values internally use a collection of values, a rule may also include a "count" of values, which allows for numeric expressions against the number of values stored in the descriptor.  They may also use "unique" and "distinct" qualifiers if the key allows for non-distinct values.
+Additionally, because all descriptor values internally use a collection of values, a rule may also include a "count" of values, which allows for numeric expressions against the number of values stored in the descriptor.  They may also use the "distinct" qualifier to construct a new list with each value occurring at most once, if the key allows for non-distinct values.  To replicate the idea of "present" and "not present", the "count" of values should use a "not equal to zero" and "equal to zero", expression, respectively.
 
 
 ### Self-Organizing Groups
@@ -50,6 +48,10 @@ The members of the SOG construct a super structure for the SOG itself.  The supe
 For the purposes of this document, a SOG represents one collection of members whose shared descriptors match a rule, and a SOG rule describes how to lump items into members of a SOG.
 
 Because the SOGs construct a single super structure, SOG rules can operate on other SOGs.  Implementations should not allow for SOG rules to declare a recursive model of super structure generation, and so may require some additional restriction.
+
+SOGs may have the declaring rule also force alterations to its descriptors.  These rules may remove, add, or replace descriptor values.
+
+While the matching engine considers SOG super structures as stand-alone entities, the user interface aspect must be able to relate the SOG super structure entity to the constituent member sources, and the rules that created it.
 
 
 ### Variable Values
@@ -71,13 +73,62 @@ The simplest form of implication comes in the form of an "if-then" style rule se
 
 This allows for enforcing setups, like "all requirements must have a requirement id."  It also allows for constructing experience into the system, such as "all input text must include SQL injection tests."
 
-Conformity implications can apply to both simple descriptor matchers and SOGs.
+At a low level, conformity implications only apply to simple matching rules.  The SOG definition does not need these, as the matching descriptors for the SOG definition can create matching rules on the members, and by adding specific descriptor alterations to the generated SOG, simple matching rules can apply on items with that new descriptor.  Implementations may make a quality-of-life improvement by allowing these on the SOG definition, though.
 
 
 ### Convergent Implication
 
-Convergent implications build upon the [SOGs](#self-organizing-groups) by enforcing restrictions within the group, by having the group itself define the restrictions.  This takes the general form of, "for all items in the SOG, they must have descriptor A match each other."
+Convergent implications build upon the [SOGs](#self-organizing-groups) by enforcing restrictions within the group, by having the group itself define the restrictions.
 
-This takes advantage of the construction of a super structure from the members of the SOG.
+These requires a descriptor evaluation to match between all members.  The supported matchers include 'all match' (the value for each member must match), and 'disjoint' (each member's value must not match any other member's value).
 
-Due to the lack of a hierarchy, ideas such as "all things that use the structure 'user_profile' must share fields with matching names and types" require one rule for declaring how fields must have specific keys match amongst members, and another rule for constructing a multi-staged SOG, one for declaring each implementation's collection of fields for the structure, and another to collect those SOG super structures into another super structure that enforces that the collection of field names must match between members.
+
+# Examples
+
+## All Implementations of a Structure Share the Same Fields with the Same Types
+
+Due to the lack of a hierarchy, ideas such as "all things that use the structure 'user_profile' must share fields with matching names and types" require a collection of rules.  However, some fields may be specific to an implementation, and if it has the `visibility = "private"` descriptor, it will not be included.
+
+It expects these descriptor ontologies:
+
+- `data-type` enum, whose potential values include `structure` and `field`.
+- `structure` free string.
+- `field-name` free string.
+- `field-type` enum, whose potential values include `string` and `float`.
+- `visibility` enum, whose potential values include `private`.
+
+And that produces these rules:
+
+- A simple rule to enforce field declaration restrictions.
+  - Has matching descriptors:
+    - `data-type = "field"`
+  - Has conformity implications:
+    - `count(structure) = 1`
+    - `count(field-name) = 1`
+    - `count(field-type) = 1`
+- A self-organizing group relation for each field in the structure.
+  - Has matching descriptors:
+    - `data-type = "field"`
+    - `visibility` does not include `"private"`
+  - Has SOG shared value descriptors:
+    - `structure`
+    - `field-name`
+  - Has SOG descriptor alterations:
+    - set `sog-type` to `structure-field`
+  - Has no convergence implication.
+- A simple rule for the generated structure-field SOGs:
+  - Has matching descriptors:
+    - `sog-type = structure-field`
+  - Has conformity implications:
+    - `count(distinct(field-type)) = 1`; because the constructed SOG joins the members' values together into an array, having a 'distinct' on the field-type means that all the field-type values must be the same.
+  - Has no convergence implications.
+- A self-organizing group relation for each structure, built on top of the field SOGs.
+  - Has matching descriptors:
+    - `sog-type = "structure-field`
+    - `count(structure) = 1`
+  - Has SOG shared value descriptors:
+    - `structure`
+  - Has SOG descriptor alterations:
+    - set `sog-type` to `structure`; this replaces the joined-together value from the members' super structure value to now be a different, single value.
+  - Has convergence implications:
+    - `field-name` values must all match.
