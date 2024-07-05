@@ -16,7 +16,24 @@ All of the information gathered by the data exchange format requires:
 
 ## Supported Schema
 
-### [Test Execution](schema/test-execution.v1.schema.json)
+### [Ontology](schema/ontology.v1.schema.json)
+
+Defines the allowed descriptors, and how documents must use them.
+
+Each project must have an ontology to validate conformity for descriptor usage.  For cases with multiple projects that need joining together, use the [ontology transform](schema/ontology-transform.v1.schema.json) document.
+
+
+### [Document Description](schema/document-description.v1.schema.json)
+
+Describes the items and their descriptors, extracted from a document.  As this can get very exhaustive and repetitive, we expect tooling to construct these files from the document.
+
+
+### [Rules](schema/rules.v1.schema.json)
+
+Defines expectations and requirements around extracted documents.
+
+
+### [Test Execution](schema/test-execution.v1.schema.json) (under development)
 
 Describes the results of running zero or more tests.
 
@@ -32,8 +49,10 @@ Each test in the document includes data such as:
 
 In some cases, the document may include, or only contain, a summary of test execution information.  In this case, the summary should also list the identifying information for the summarized tests.
 
+
 ## Contributor Style Notes
 
+* The files must have standard JSON formatting; the style does not permit JavaScript-like comments.
 * The files use 2 spaces for indention.
 * Files use UTF-8 encoding.
 * Schema reference objects SHOULD use only a single line.
@@ -64,3 +83,4 @@ In some cases, the document may include, or only contain, a summary of test exec
 * Object keys should use lower camel case.  This makes using them in programming languages easier.  Meta-data fields should have a `$` prefix.
 * Every object should allow `$comment` and `$comments` fields.  In general it should also allow the `sources` field, to allow linking the item back to where the generating program discovered the value.
 * Every object should mark itself as allowing no additional properties (`"additionalProperties": false`).  However, implementations should not fail if the data includes unknown fields, as that allows for better forward compatibility.
+* Feel free to add your own `$comment` to the schema, but note that these exist solely for schema maintainers, not for end-users.

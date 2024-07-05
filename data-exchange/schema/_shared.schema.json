@@ -23,8 +23,8 @@
       "description": "Data exchange schema format.",
       "type": "string",
       "format": "url",
-      "minLength": "6",
-      "maxLength": "2000"
+      "minLength": 6,
+      "maxLength": 2000
     },
     "Id": {
       "title": "Unique Identifier",
@@ -188,5 +188,33 @@
         }
       }
     }
+  },
+
+  "DescriptorKey": {
+    "title": "Descriptor Key",
+    "description": "Unique identifier for the descriptor.",
+    "type": "string",
+    "minLength": 1,
+    "maxLength": 100
+  },
+  "DescriptorValue": {
+    "oneOf": [
+      {"$ref": "#/$defs/DescriptorNumericValue"},
+      {"$ref": "#/$defs/DescriptorTextValue"}
+    ]
+  },
+  "DescriptorNumericValue": {
+    "title": "Descriptor Numeric Value",
+    "description": "A numeric value.",
+    "type": "number",
+    "minimum": -1e+308,
+    "maximum": 1e+308
+  },
+  "DescriptorTextValue": {
+    "title": "Descriptor Text Value",
+    "description": "A textual value, either an enumerated or free value.",
+    "type": "string",
+    "minLength": 0,
+    "maxLength": 100000
   }
 }

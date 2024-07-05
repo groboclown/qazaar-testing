@@ -28,9 +28,9 @@ A rule first contains a matching collection of descriptors.  This has one or mor
 
 A matching descriptors collection follows basic boolean logic between expressions ('and', 'or', and 'not' operators with grouping).  Each expression matches a specific descriptor key against its value, not against values of other descriptors.
 
-For numeric type values, the allowed operations include only "equal" to a precise value, or "within" a range.  This implies "outside" and "not equal" when used with the 'not' grouping operation.  If a numeric descriptor includes multiple values, then this can also take the form "all within" or "any within", and "equal" here means "any value equal".
+For numeric type values, the allowed operations include "within" a range.  This implies "equal" by setting the bounds to the same value, as well as "outside" and "not equal" when used with the 'not' grouping operation.  If a numeric descriptor includes multiple values, then this can also take the form "all within" or "any within", and "equal" here means "any value equal".
 
-Non-numeric values must always take the form of either "contains some", "contains all", or "contains only".  Containment comparison may use equality or a non-backtracking regular expression.
+Non-numeric values must always take the form of either "contains some" (one or more of the elements in the matcher must exist in the matching descriptor's value), "contains all" (all the elements in the matcher must exist in the matching descriptor's value), or "contains only" (the matching descriptor's value must contain exactly the same values as in the matcher).  Containment comparison may use equality or a non-backtracking regular expression.
 
 Additionally, because all descriptor values internally use a collection of values, a rule may also include a "count" of values, which allows for numeric expressions against the number of values stored in the descriptor.  They may also use the "distinct" qualifier to construct a new list with each value occurring at most once, if the key allows for non-distinct values.  To replicate the idea of "present" and "not present", the "count" of values should use a "not equal to zero" and "equal to zero", expression, respectively.
 

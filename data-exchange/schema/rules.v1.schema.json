@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema",
   "title": "Rule Declarations",
-  "description": "Constructed rules that define restrictions and enforcements for documents.  STATUS: in development",
+  "description": "Constructed rules that define restrictions and enforcements for documents.  STATUS: ready for review",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -38,11 +38,43 @@
       "required": ["sharedValues"],
       "additionalProperties": false,
       "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
         "id": {"$ref": "#/$defs/Id"},
-        "variables": {},
-        "matchingDescriptors": {},
-        "sharedValues": {},
-        "alterations": {},
+        "variables": {
+          "title": "Simple Replacement Variable List",
+          "description": "List of simple variables which an external system may define for replacement within the values.",
+          "type": "array",
+          "minLength": 0,
+          "maxLength": 10000,
+          "items": {"$ref": "#/$defs/Variable"}
+        },
+        "matchingDescriptors": {
+          "title": "Matching Descriptor List",
+          "description": "List of descriptor rules that, when all match, mark items for group creation.",
+          "type": "array",
+          "minLength": 0,
+          "maxLength": 1000,
+          "items": {"$ref": "#/$defs/MatchingDescriptor"}
+        },
+        "sharedValues": {
+          "title": "Shared Value List",
+          "description": "List of descriptor keys whose matching values constructs a single SOG.",
+          "type": "array",
+          "minLength": 0,
+          "maxLength": 1000,
+          "items": {"$ref": "#/$defs/DescriptorKey"}
+        },
+        "alterations": {
+          "title": "Altered Descriptor List",
+          "description": "List of descriptor alterations to perform on the generated SOG.",
+          "type": "array",
+          "minLength": 0,
+          "maxLength": 1000,
+          "items": {"$ref": "#/$defs/Alteration"}
+        },
         "convergences": {
           "title": "Convergence Implication List",
           "description": "List of SOG convergence implications.",
@@ -61,9 +93,27 @@
       "required": ["matchingDescriptors"],
       "additionalProperties": false,
       "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
         "id": {"$ref": "#/$defs/Id"},
-        "variables": {},
-        "matchingDescriptors": {},
+        "variables": {
+          "title": "Simple Replacement Variable List",
+          "description": "List of simple variables which an external system may define for replacement within the values.",
+          "type": "array",
+          "minLength": 0,
+          "maxLength": 10000,
+          "items": {"$ref": "#/$defs/Variable"}
+        },
+        "matchingDescriptors": {
+          "title": "Matching Descriptor List",
+          "description": "List of descriptor rules that, when all match, mark items as affected by the rule.",
+          "type": "array",
+          "minLength": 0,
+          "maxLength": 1000,
+          "items": {"$ref": "#/$defs/MatchingDescriptor"}
+        },
         "conformities": {
           "title": "Conformity Implication List",
           "description": "List of conformity implications.",
@@ -75,15 +125,474 @@
       }
     },
 
-    "ConvergenceImplication": {
+    "Variable": {
+      "title": "Variable",
+      "description": "A simple key to replace its text within a rule or group definition.  The value must be considered a single 'token' (such as a descriptor key or value).  The replacement matches '${variable-name}'",
+      "type": "object",
+      "required": ["name", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
 
+        "name": {
+          "title": "Variable name",
+          "description": "Name of the variable, as replaced within the text.",
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9$%^@:/?<>;!#&*()+=[]|,._-]+$",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "description": {
+          "title": "Variable description",
+          "description": "Optional text describing the purpose of the variable.",
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 1000
+        },
+        "type": {
+          "title": "Variable Value Type",
+          "description": "Helper for tools to restrict the possible allowed values for the type.  Generally tool specific, but at a minimum must support 'text', 'number', and 'integer'.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      }
+    },
+
+    "Alteration": {
+      "title": "Descriptor Value Change",
+      "description": "Defines how a descriptor value should change.  The values must match the allowed descriptor values.",
+      "type": "object",
+      "required": ["action", "key", "values"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
+        "key": {"$ref": "#/$defs/DescriptorKey"},
+        "action": {
+          "title": "Alteration Action",
+          "description": "The action to the base descriptor value to perform.",
+          "type": "string",
+          "enum": [
+            "add",
+            "addDistinct",
+            "remove",
+            "removeDistinct",
+            "set"
+          ]
+        },
+        "values": {
+          "title": "List of Alteration Values",
+          "description": "Values to alter in the descriptor.  For 'add' operation, all the values are added, even if they already exist.  For 'remove' operation, any matching value is removed; but only once for each value in this list.  For 'addDistinct', then the value is added only if it does not already exist.  For 'removeDistinct', all values that match are removed, regardless of the number of them.  For 'set', the values are replaced with the new values.",
+          "type": "array",
+          "items": {"$ref": "#/$defs/DescriptorValue"}
+        }
+      }
+    },
+
+    "ConvergenceImplication": {
+      "title": "Convergence Implication",
+      "description": "A descriptor requirement for all members of a Self-Organizing Group",
+      "type": "object",
+      "required": ["key", "requires", "level"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
+        "key": {"$ref": "#/$defs/DescriptorKey"},
+        "level": {"$ref": "#/$defs/ImplicationLevel"},
+        "distinct": {
+          "title": "Distinct",
+          "description": "True means to examine the values within each member as distinct (they only appear at most once).",
+          "type": "boolean",
+          "default": false
+        },
+        "requires": {
+          "title": "Convergence Requirement",
+          "description": "How the descriptor's values must align between the SOG members. 'allMatch' means that each member's values must all be identical.  'disjoint' means that each value can exist in, at most, one member.",
+          "type": "string",
+          "enum": [
+            "allMatch",
+            "disjoint"
+          ]
+        }
+      }
     },
 
     "ConformityImplication": {
-
+      "title": "Conformity Implication",
+      "description": "A descriptor requirement for the item matching a rule.",
+      "type": "object",
+      "required": ["level", "matcher"],
+      "additionalProperties": false,
+      "properties": {
+        "level": {"$ref": "#/$defs/ImplicationLevel"},
+        "matcher": {"$ref": "#/$defs/MatchingDescriptor"}
+      }
     },
 
+    "ImplicationLevel": {
+      "title": "Implication Level",
+      "description": "Level of severity for the implication.  The executing system declares allowed values, and uses these to determine the enforcement requirements for the implication.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
 
+    "MatchingDescriptor": {
+      "oneOf": [
+        {"$ref": "OrMatcher"},
+        {"$ref": "AndMatcher"},
+        {"$ref": "NotMatcher"},
+        {"$ref": "ContainsSomeMatcher"},
+        {"$ref": "ContainsAllMatcher"},
+        {"$ref": "ContainsOnlyMatcher"}
+      ]
+    },
+
+    "OrMatcher": {
+      "title": "Or Matcher",
+      "description": "A collection of sub-matchers, of which at least one must match.",
+      "type": "object",
+      "required": ["type", "collection"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
+        "type": {
+          "title": "Descriptor Matcher Type",
+          "description": "The type of descriptor matcher defined by this definition.",
+          "type": "string",
+          "const": "or"
+        },
+        "collection": {"$ref": "#/$defs/MatcherCollection"}
+      }
+    },
+    "AndMatcher": {
+      "title": "And Matcher",
+      "description": "A collection of sub-matchers, of which all must match.",
+      "type": "object",
+      "required": ["type", "collection"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
+        "type": {
+          "title": "Descriptor Matcher Type",
+          "description": "The type of descriptor matcher defined by this definition.",
+          "type": "string",
+          "const": "and"
+        },
+        "collection": {"$ref": "#/$defs/MatcherCollection"}
+      }
+    },
+    "NotMatcher": {
+      "title": "Not Matcher",
+      "description": "Inverts the matching result of a sub-matcher.",
+      "type": "object",
+      "required": ["type", "matcher"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
+        "type": {
+          "title": "Descriptor Matcher Type",
+          "description": "The type of descriptor matcher defined by this definition.",
+          "type": "string",
+          "const": "not"
+        },
+        "matcher": {"$ref": "#/$defs/MatchingDescriptor"}
+      }
+    },
+    "ContainsSomeMatcher": {
+      "title": "Contains Some Matcher",
+      "description": "Inverts the matching result of a sub-matcher.",
+      "type": "object",
+      "required": ["type", "key", "like"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
+        "key": {"$ref": "#/$defs/DescriptorKey"},
+        "count": {
+          "title": "Value Count",
+          "descriptor": "Matches on the number of values, rather than the values themselves.  If combined with 'distinct', then this counts the number of distinct values.",
+          "type": "boolean",
+          "default": false
+        },
+        "distinct": {
+          "title": "Distinct Values",
+          "descriptor": "Matches on the distinct values subset.",
+          "type": "boolean",
+          "default": false
+        },
+
+        "type": {
+          "title": "Descriptor Matcher Type",
+          "description": "The type of descriptor matcher defined by this definition.",
+          "type": "string",
+          "const": "not"
+        },
+        "matcher": {"$ref": "#/$defs/MatchingDescriptor"}
+      }
+    },
+    "ContainsAllMatcher": {
+      "title": "Not Matcher",
+      "description": "Inverts the matching result of a sub-matcher.",
+      "type": "object",
+      "required": ["type", "matcher"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
+        "key": {"$ref": "#/$defs/DescriptorKey"},
+        "count": {
+          "title": "Value Count",
+          "descriptor": "Matches on the number of values, rather than the values themselves.  If combined with 'distinct', then this counts the number of distinct values.",
+          "type": "boolean",
+          "default": false
+        },
+        "distinct": {
+          "title": "Distinct Values",
+          "descriptor": "Matches on the distinct values subset.",
+          "type": "boolean",
+          "default": false
+        },
+
+        "type": {
+          "title": "Descriptor Matcher Type",
+          "description": "The type of descriptor matcher defined by this definition.",
+          "type": "string",
+          "const": "not"
+        },
+        "matcher": {"$ref": "#/$defs/MatchingDescriptor"}
+      }
+    },
+    "ContainsOnlyMatcher": {
+      "title": "Not Matcher",
+      "description": "Inverts the matching result of a sub-matcher.",
+      "type": "object",
+      "required": ["type", "matcher"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
+        "key": {"$ref": "#/$defs/DescriptorKey"},
+        "count": {
+          "title": "Value Count",
+          "descriptor": "Matches on the number of values, rather than the values themselves.  If combined with 'distinct', then this counts the number of distinct values.",
+          "type": "boolean",
+          "default": false
+        },
+        "distinct": {
+          "title": "Distinct Values",
+          "descriptor": "Matches on the distinct values subset.",
+          "type": "boolean",
+          "default": false
+        },
+
+        "type": {
+          "title": "Descriptor Matcher Type",
+          "description": "The type of descriptor matcher defined by this definition.",
+          "type": "string",
+          "const": "not"
+        },
+        "matcher": {"$ref": "#/$defs/MatchingDescriptor"}
+      }
+    },
+    "MatcherCollection": {
+      "title": "Matcher Collection",
+      "description": "A collection of one or more sub-matchers.",
+      "type": "array",
+      "minLength": 1,
+      "maxLength": 1000,
+      "items": {"$ref": "#/$defs/MatchingDescriptor"}
+    },
+
+    "ValueCheckList": {
+      "title": "Value Like List",
+      "description": "List of checks for a descriptor's value.  The descriptor value type must match the check value type.",
+      "type": "array",
+      "minLength": 0,
+      "maxLength": 1000,
+      "items": {"$ref": "#/$defs/ValueCheck"}
+    },
+    "ValueCheck": {
+      "oneOf": [
+        {"$ref": "#/$defs/OrCheck"},
+        {"$ref": "#/$defs/AndCheck"},
+        {"$ref": "#/$defs/NotCheck"},
+        {"$ref": "#/$defs/StringPatternCheck"},
+        {"$ref": "#/$defs/StringEqualCheck"},
+        {"$ref": "#/$defs/NumericWithinCheck"}
+      ]
+    },
+    "OrCheck": {
+      "title": "Or Collection Value Check",
+      "description": "A check on a collection of value checks, at least one of which must pass.",
+      "type": "object",
+      "required": ["type", "collection"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
+        "type": {
+          "title": "Value Check Type",
+          "description": "Marks the check as for a specific type.",
+          "type": "string",
+          "const": "or"
+        },
+        "collection": {"$ref": "#/$defs/ValueCheckList"}
+      }
+    },
+    "AndCheck": {
+      "title": "And Collection Value Check",
+      "description": "A check on a collection of value checks, all of which must pass.",
+      "type": "object",
+      "required": ["type", "collection"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
+        "type": {
+          "title": "Value Check Type",
+          "description": "Marks the check as for a specific type.",
+          "type": "string",
+          "const": "and"
+        },
+        "collection": {"$ref": "#/$defs/ValueCheckList"}
+      }
+    },
+    "NotCheck": {
+      "title": "Not Value Check",
+      "description": "Inverts the contained value check.",
+      "type": "object",
+      "required": ["type", "check"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
+        "type": {
+          "title": "Value Check Type",
+          "description": "Marks the check as for a specific type.",
+          "type": "string",
+          "const": "and"
+        },
+        "check": {"$ref": "#/$defs/ValueCheck"}
+      }
+    },
+    "StringPatternCheck": {
+      "title": "Value String Pattern Check",
+      "description": "A regular-expression pattern for string values.  Expression pattern checking follows the value's case sensitivity ontology setting.",
+      "type": "object",
+      "required": ["type", "pattern"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
+        "type": {
+          "title": "Value Check Type",
+          "description": "Marks the check as for a specific type.",
+          "type": "string",
+          "const": "pattern"
+        }
+      }
+    },
+    "StringEqualCheck": {
+      "title": "Value String Equal Check",
+      "description": "An exact match for string values.  Equality checking follows the value's case sensitivity ontology setting.",
+      "type": "object",
+      "required": ["type", "equals"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
+        "type": {
+          "title": "Value Check Type",
+          "description": "Marks the check as for a specific type.",
+          "type": "string",
+          "const": "equal"
+        },
+        "equals": {"$ref": "#/$defs/DescriptorTextValue"}
+      }
+    },
+    "NumericWithinCheck": {
+      "title": "Value Numerically Within Bounds Check",
+      "description": "A check for whether a numeric value obeys a boundary.  (Minimum and maximum allowed values come from the ontology)",
+      "type": "object",
+      "required": ["type", "minimum", "maximum"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
+        "type": {
+          "title": "Value Check Type",
+          "description": "Marks the check as for a specific type.",
+          "type": "string",
+          "const": "within"
+        },
+        "minimum": {"$ref": "#/$defs/DescriptorNumericValue"},
+        "maximum": {"$ref": "#/$defs/DescriptorNumericValue"}
+      }
+    },
+
+    "DescriptorKey": {
+      "title": "Descriptor Key",
+      "description": "Unique identifier for the descriptor.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "DescriptorValue": {
+      "oneOf": [
+        {"$ref": "#/$defs/DescriptorNumericValue"},
+        {"$ref": "#/$defs/DescriptorTextValue"}
+      ]
+    },
+    "DescriptorNumericValue": {
+      "title": "Descriptor Numeric Value",
+      "description": "A numeric value.",
+      "type": "number",
+      "minimum": -1e+308,
+      "maximum": 1e+308
+    },
+    "DescriptorTextValue": {
+      "title": "Descriptor Text Value",
+      "description": "A textual value, either an enumerated or free value.",
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 100000
+    },
     "Comment": {
       "title": "Author Comment",
       "description": "Document author comment text.",
@@ -104,8 +613,8 @@
       "description": "Data exchange schema format.",
       "type": "string",
       "format": "url",
-      "minLength": "6",
-      "maxLength": "2000"
+      "minLength": 6,
+      "maxLength": 2000
     },
     "Id": {
       "title": "Unique Identifier",

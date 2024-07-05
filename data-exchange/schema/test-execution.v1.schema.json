@@ -35,8 +35,8 @@
       "description": "Data exchange schema format.",
       "type": "string",
       "format": "url",
-      "minLength": "6",
-      "maxLength": "2000"
+      "minLength": 6,
+      "maxLength": 2000
     },
     "Id": {
       "title": "Unique Identifier",

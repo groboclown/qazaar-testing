@@ -34,14 +34,7 @@
         "$comment": {"$ref": "#/$defs/Comment"},
         "$comments": {"$ref": "#/$defs/CommentList"},
         "sources": {"$ref": "#/$defs/DocumentSources"},
-        "id": {
-          "title": "Document Object Identifier",
-          "description": "Identifier for the object, unique within the source document.  Where possible, it should be unique across all documents.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1000,
-          "pattern": "^\\S+$"
-        },
+        "id": {"$ref": "#/$defs/Id"},
         "descriptors": {
           "title": "Descriptor List",
           "description": "List of descriptors assigned to this object.  The list of descriptors must not contain multiple items with the same key, and the values for the key must conform to the document's ontology.",
@@ -59,37 +52,45 @@
       "required": ["key", "values"],
       "additionalProperties": false,
       "properties": {
-        "key": {
-          "title": "Descriptor Key",
-          "description": "The descriptor key.  This must match a known ontological descriptor key.",
-          "type": "string"
-        },
+        "key": {"$ref": "#/$defs/DescriptorKey"},
         "values": {
           "title": "Descriptor Value List",
           "description": "The descriptor values.  Each entry must conform to the descriptor key's value types.",
           "minLength": 0,
           "maxLength": 100000,
-          "items": {
-            "oneOf": [
-              {
-                "title": "Descriptor Numeric Value",
-                "description": "A numeric value.",
-                "type": "number",
-                "minimum": -1e10000,
-                "maximum": 1e10000
-              },
-              {
-                "title": "Descriptor Text Value",
-                "description": "A textual value, either an enumerated or free value.",
-                "type": "string",
-                "minLength": 0,
-                "maxLength": 100000
-              }
-            ]
-          }
+          "items": {"$ref": "#/$defs/DescriptorValue"}
         }
       }
     },
+
+    "DescriptorKey": {
+      "title": "Descriptor Key",
+      "description": "Unique identifier for the descriptor. (Taken from the ontology schema)",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "DescriptorValue": {
+      "oneOf": [
+        {"$ref": "#/$defs/DescriptorNumericValue"},
+        {"$ref": "#/$defs/DescriptorTextValue"}
+      ]
+    },
+    "DescriptorNumericValue": {
+      "title": "Descriptor Numeric Value",
+      "description": "A numeric value.",
+      "type": "number",
+      "minimum": -1e+308,
+      "maximum": 1e+308
+    },
+    "DescriptorTextValue": {
+      "title": "Descriptor Text Value",
+      "description": "A textual value, either an enumerated or free value.",
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 100000
+    },
+
     "Comment": {
       "title": "Author Comment",
       "description": "Document author comment text.",
@@ -110,8 +111,8 @@
       "description": "Data exchange schema format.",
       "type": "string",
       "format": "url",
-      "minLength": "6",
-      "maxLength": "2000"
+      "minLength": 6,
+      "maxLength": 2000
     },
     "Id": {
       "title": "Unique Identifier",

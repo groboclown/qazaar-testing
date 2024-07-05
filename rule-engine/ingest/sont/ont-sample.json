@@ -1,0 +1,36 @@
+{
+    "$schema": "https://raw.githubusercontent.com/groboclown/qazaar-testing/main/data-exchange/schema/ontology.v1.schema.json",
+    "commonSourceRefs": [
+        {
+            "id": "ont-sample-1",
+            "rep": "git",
+            "loc": "github.com/groboclown/qazaar-testing/rule-engine/inject/sont/ont-sample.json"
+        }
+    ],
+    "descriptors": [
+        {
+            "type": "enum",
+            "key": "ek1",
+            "enum": [
+                "a", "b"
+            ],
+            "maximumCount": 2
+        },
+        {
+            "type": "free",
+            "key": "fk1",
+            "constraints": [
+                {
+                    "type": "pattern",
+                    "pattern": "^[a-z]+$"
+                }
+            ]
+        },
+        {
+            "type": "number",
+            "key": "nk1",
+            "minimum": 0,
+            "maximum": 5
+        }
+    ]
+}

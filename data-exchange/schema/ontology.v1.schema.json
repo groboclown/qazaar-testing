@@ -20,180 +20,153 @@
       "type": "array",
       "minLength": 0,
       "maxLength": 10000,
-      "items": {"$ref": "Descriptor"}
+      "items": {"$ref": "#/$defs/Descriptor"}
     }
   },
   "$defs": {
     "Descriptor": {
       "oneOf": [
-        {
-          "title": "Ontology Enumerated Descriptor",
-          "description": "A single ontological descriptor for a sourced object which only allows string values from a limited collection.",
-          "type": "object",
-          "required": ["type", "name", "enum"],
-          "additionalProperties": false,
-          "properties": {
-            "$comment": {"$ref": "#/$defs/Comment"},
-            "$comments": {"$ref": "#/$defs/CommentList"},
-            "sources": {"$ref": "#/$defs/DocumentSources"},
-            "type": {
-              "title": "Descriptor Value Type",
-              "description": "The type of descriptor defined by this definition.",
-              "type": "string",
-              "const": "enum"
-            },
-            "name": {
-              "title": "Descriptor Name",
-              "description": "Unique identifier for the descriptor.",
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 100
-            },
-            "distinct": {
-              "title": "Has Distinct Values",
-              "description": "If true, the descriptor's value list may not contain multiple items with the same value.",
-              "type": "boolean",
-              "default": false
-            },
-            "enum": {
-              "title": "Allowed Values",
-              "description": "Allowed values for the descriptor.  While the allowed list of values has a maximum, projects that require a larger number of values should instead consider using a value pattern instead.",
-              "type": "array",
-              "minLength": 1,
-              "maxLength": 10000,
-              "items": {
-                "title": "Category Value",
-                "description": "Allowable text for a text object category descriptor.",
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 100
-              }
-            },
-            "maximumCount": {
-              "title": "Maximum Contained Values",
-              "description": "Maximum number of values contained in a single descriptor.  If 'distinct' is true, then this is the maximum number of distinct values.  Defaults to 1.",
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100000,
-              "default": 1
-            }
-          }
-        },
-        {
-          "title": "Ontology Free Descriptor",
-          "description": "A single ontological descriptor for a sourced object.  Note that systems that record the values, it should trim surrounding whitespace, and condense internal whitespace to a single value (so 'A  B   C' becomes 'A B C').",
-          "type": "object",
-          "required": ["type", "name"],
-          "additionalProperties": false,
-          "properties": {
-            "$comment": {"$ref": "#/$defs/Comment"},
-            "$comments": {"$ref": "#/$defs/CommentList"},
-            "sources": {"$ref": "#/$defs/DocumentSources"},
-            "type": {
-              "title": "Descriptor Value Type",
-              "description": "The type of descriptor defined by this definition.",
-              "type": "string",
-              "const": "free"
-            },
-            "name": {
-              "title": "Descriptor Name",
-              "description": "Unique identifier for the descriptor.",
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 100
-            },
-            "distinct": {
-              "title": "Has Distinct Values",
-              "description": "If true, the descriptor's value list may not contain multiple items with the same value.",
-              "type": "boolean",
-              "default": false
-            },
-            "caseSensitive": {
-              "title": "Value Case Sensitivity",
-              "description": "Determines whether the systems interpret values exactly as written, or if it should ignore the case.  By default, all descriptors ignore value case.  Case sensitivity should, where possible, ignore case for the complete UTF characters.",
-              "type": "boolean",
-              "default": false
-            },
-            "constraints": {
-              "title": "Limitations on Values",
-              "description": "A list of limitations for the allowed values for this descriptor.  If the list contains multiple constraints, the descriptor value must apply to all of them.",
-              "type": "array",
-              "minLength": 0,
-              "maxLength": 1000,
-              "items": {"$ref": "ValueConstraint"}
-            },
-            "maximumLength": {
-              "title": "Maximum Value Length",
-              "description": "Maximum number of characters of the free value.  In the case of UTF-8, each diacritic mark counts as a character.",
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100000,
-              "default": 1000
-            },
-            "maximumCount": {
-              "title": "Maximum Contained Values",
-              "description": "Maximum number of values contained in a single descriptor.  If 'distinct' is true, then this is the maximum number of distinct values.  Default is '1'.",
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100000,
-              "default": 1
-            }
-          }
-        },
-        {
-          "title": "Ontology Numeric Descriptor",
-          "description": "A single ontological descriptor for a sourced object.  Note that systems that record the values, it should trim surrounding whitespace, and condense internal whitespace to a single value (so 'A  B   C' becomes 'A B C').",
-          "type": "object",
-          "required": ["type", "name", "minimum", "maximum"],
-          "additionalProperties": false,
-          "properties": {
-            "$comment": {"$ref": "#/$defs/Comment"},
-            "$comments": {"$ref": "#/$defs/CommentList"},
-            "sources": {"$ref": "#/$defs/DocumentSources"},
-            "type": {
-              "title": "Descriptor Value Type",
-              "description": "The type of descriptor defined by this definition.",
-              "type": "string",
-              "const": "number"
-            },
-            "name": {
-              "title": "Descriptor Name",
-              "description": "Unique identifier for the descriptor.",
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 100
-            },
-            "distinct": {
-              "title": "Has Distinct Values",
-              "description": "If true, the descriptor's value list may not contain multiple items with the same value.",
-              "type": "boolean",
-              "default": false
-            },
-            "minimum": {
-              "title": "Minimum Value",
-              "description": "Smallest allowed value for the descriptor.  Must be less or equal to the maximum.",
-              "type": "number",
-              "minimum": -1e10000,
-              "maximum": 1e10000
-            },
-            "maximum": {
-              "title": "Maximum Value",
-              "description": "Largest allowed value for the descriptor.  Must be greater or equal to the minimum.",
-              "type": "number",
-              "minimum": -1e10000,
-              "maximum": 1e10000
-            },
-            "maximumCount": {
-              "title": "Maximum Contained Values",
-              "description": "Maximum number of values contained in a single descriptor.  If 'distinct' is true, then this is the maximum number of distinct values.  The default is 1.",
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100000,
-              "default": 1
-            }
-          }
-        }        
+        {"$ref": "#/$defs/EnumDescriptor"},
+        {"$ref": "#/$defs/FreeDescriptor"},
+        {"$ref": "#/$defs/NumericDescriptor"}
       ]
+    },
+    "EnumDescriptor": {
+      "title": "Ontology Enumerated Descriptor",
+      "description": "A single ontological descriptor for a sourced object which only allows string values from a limited collection.",
+      "type": "object",
+      "required": ["type", "key", "enum"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+        "type": {
+          "title": "Descriptor Value Type",
+          "description": "The type of descriptor defined by this definition.",
+          "type": "string",
+          "const": "enum"
+        },
+        "key": {"$ref": "#/$defs/DescriptorKey"},
+        "distinct": {
+          "title": "Has Distinct Values",
+          "description": "If true, the descriptor's value list may not contain multiple items with the same value.",
+          "type": "boolean",
+          "default": false
+        },
+        "enum": {
+          "title": "Allowed Values",
+          "description": "Allowed values for the descriptor.  While the allowed list of values has a maximum, projects that require a larger number of values should instead consider using a value pattern instead.",
+          "type": "array",
+          "minLength": 1,
+          "maxLength": 10000,
+          "items": {
+            "title": "Category Value",
+            "description": "Allowable text for a text object category descriptor.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "maximumCount": {
+          "title": "Maximum Contained Values",
+          "description": "Maximum number of values contained in a single descriptor.  If 'distinct' is true, then this is the maximum number of distinct values.  Defaults to 1.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000,
+          "default": 1
+        }
+      }
+    },
+    "FreeDescriptor": {
+      "title": "Ontology Free Descriptor",
+      "description": "A single ontological descriptor for a sourced object.  Note that systems that record the values, it should trim surrounding whitespace, and condense internal whitespace to a single value (so 'A  B   C' becomes 'A B C').",
+      "type": "object",
+      "required": ["type", "key"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+        "type": {
+          "title": "Descriptor Value Type",
+          "description": "The type of descriptor defined by this definition.",
+          "type": "string",
+          "const": "free"
+        },
+        "key": {"$ref": "#/$defs/DescriptorKey"},
+        "distinct": {
+          "title": "Has Distinct Values",
+          "description": "If true, the descriptor's value list may not contain multiple items with the same value.",
+          "type": "boolean",
+          "default": false
+        },
+        "caseSensitive": {
+          "title": "Value Case Sensitivity",
+          "description": "Determines whether the systems interpret values exactly as written, or if it should ignore the case.  By default, all descriptors ignore value case.  Case sensitivity should, where possible, ignore case for the complete UTF characters.",
+          "type": "boolean",
+          "default": false
+        },
+        "constraints": {
+          "title": "Limitations on Values",
+          "description": "A list of limitations for the allowed values for this descriptor.  If the list contains multiple constraints, the descriptor value must apply to all of them.",
+          "type": "array",
+          "minLength": 0,
+          "maxLength": 1000,
+          "items": {"$ref": "#/$defs/ValueConstraint"}
+        },
+        "maximumLength": {
+          "title": "Maximum Value Length",
+          "description": "Maximum number of characters of the free value.  In the case of UTF-8, each diacritic mark counts as a character.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000,
+          "default": 1000
+        },
+        "maximumCount": {
+          "title": "Maximum Contained Values",
+          "description": "Maximum number of values contained in a single descriptor.  If 'distinct' is true, then this is the maximum number of distinct values.  Default is '1'.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000,
+          "default": 1
+        }
+      }
+    },
+    "NumericDescriptor": {
+      "title": "Ontology Numeric Descriptor",
+      "description": "A single ontological descriptor for a sourced object.  Note that systems that record the values, it should trim surrounding whitespace, and condense internal whitespace to a single value (so 'A  B   C' becomes 'A B C').  The 'minimum' must be less than or equal to the 'maximum' value.",
+      "type": "object",
+      "required": ["type", "key", "minimum", "maximum"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+        "type": {
+          "title": "Descriptor Value Type",
+          "description": "The type of descriptor defined by this definition.",
+          "type": "string",
+          "const": "number"
+        },
+        "key": {"$ref": "#/$defs/DescriptorKey"},
+        "distinct": {
+          "title": "Has Distinct Values",
+          "description": "If true, the descriptor's value list may not contain multiple items with the same value.",
+          "type": "boolean",
+          "default": false
+        },
+        "minimum": {"$ref": "#/$defs/DescriptorNumericValue"},
+        "maximum": {"$ref": "#/$defs/DescriptorNumericValue"},
+        "maximumCount": {
+          "title": "Maximum Contained Values",
+          "description": "Maximum number of values contained in a single descriptor.  If 'distinct' is true, then this is the maximum number of distinct values.  The default is 1.  Minimum is 1, because it doesn't make sense to define a descriptor that does not allow values - all objects contain at least zero values for all descriptors.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000,
+          "default": 1
+        }
+      }
     },
     "ValueConstraint": {
       "title": "Value Constraint",
@@ -231,22 +204,40 @@
           "minLength": 1,
           "maxLength": 100
         },
-        "minimum": {
-          "title": "Minimum",
-          "description": "The minimum value (length or value-range).",
-          "type": "numeric",
-          "minimum": -1.0e10000,
-          "maximum": 1.0e10000
-        },
-        "maximum": {
-          "title": "Maximum",
-          "description": "The maximum value (length or value-range).",
-          "type": "numeric",
-          "minimum": -1.0e10000,
-          "maximum": 1.0e10000
-        }
+        "minimum": {"$ref": "#/$defs/DescriptorNumericValue"},
+        "maximum": {"$ref": "#/$defs/DescriptorNumericValue"}
       }
     },
+
+    "DescriptorKey": {
+      "title": "Descriptor Key",
+      "description": "Unique identifier for the descriptor.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "DescriptorValue": {
+      "oneOf": [
+        {"$ref": "#/$defs/DescriptorNumericValue"},
+        {"$ref": "#/$defs/DescriptorTextValue"}
+      ]
+    },
+    "DescriptorNumericValue": {
+      "title": "Descriptor Numeric Value",
+      "description": "A numeric value.",
+      "type": "number",
+      "minimum": -1e+308,
+      "maximum": 1e+308
+    },
+    "DescriptorTextValue": {
+      "title": "Descriptor Text Value",
+      "description": "A textual value, either an enumerated or free value.",
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 100000
+    },
+  
+
     "Comment": {
       "title": "Author Comment",
       "description": "Document author comment text.",
@@ -267,8 +258,8 @@
       "description": "Data exchange schema format.",
       "type": "string",
       "format": "url",
-      "minLength": "6",
-      "maxLength": "2000"
+      "minLength": 6,
+      "maxLength": 2000
     },
     "Id": {
       "title": "Unique Identifier",
