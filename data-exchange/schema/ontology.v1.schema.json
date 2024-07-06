@@ -184,9 +184,7 @@
           "type": "string",
           "enum": [
             "pattern",
-            "format",
-            "length",
-            "value-range"
+            "format"
           ]
         },
         "pattern": {
@@ -203,9 +201,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 100
-        },
-        "minimum": {"$ref": "#/$defs/DescriptorNumericValue"},
-        "maximum": {"$ref": "#/$defs/DescriptorNumericValue"}
+        }
       }
     },
 

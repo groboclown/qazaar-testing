@@ -421,12 +421,6 @@ type ValueConstraint struct {
 	// explicit list exists at this time.
 	Format *string `json:"format,omitempty" yaml:"format,omitempty" mapstructure:"format,omitempty"`
 
-	// Maximum corresponds to the JSON schema field "maximum".
-	Maximum *DescriptorNumericValue `json:"maximum,omitempty" yaml:"maximum,omitempty" mapstructure:"maximum,omitempty"`
-
-	// Minimum corresponds to the JSON schema field "minimum".
-	Minimum *DescriptorNumericValue `json:"minimum,omitempty" yaml:"minimum,omitempty" mapstructure:"minimum,omitempty"`
-
 	// Regular expression (non-backtracking) pattern the descriptor's values must
 	// match.
 	Pattern *string `json:"pattern,omitempty" yaml:"pattern,omitempty" mapstructure:"pattern,omitempty"`
@@ -441,15 +435,11 @@ type ValueConstraint struct {
 type ValueConstraintType string
 
 const ValueConstraintTypeFormat ValueConstraintType = "format"
-const ValueConstraintTypeLength ValueConstraintType = "length"
 const ValueConstraintTypePattern ValueConstraintType = "pattern"
-const ValueConstraintTypeValueRange ValueConstraintType = "value-range"
 
 var enumValues_ValueConstraintType = []interface{}{
 	"pattern",
 	"format",
-	"length",
-	"value-range",
 }
 
 // UnmarshalJSON implements json.Unmarshaler.

@@ -3,14 +3,15 @@ package sont
 
 import (
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest/internal/sel"
+	"github.com/groboclown/qazaar-testing/rule-engine/ingest/shared/comments"
+	"github.com/groboclown/qazaar-testing/rule-engine/ingest/shared/sources"
 	"github.com/groboclown/qazaar-testing/rule-engine/problem"
 	"github.com/groboclown/qazaar-testing/rule-engine/schema/ontology"
-	"github.com/groboclown/qazaar-testing/rule-engine/sources"
 	"github.com/mitchellh/mapstructure"
 )
 
 // Add adds all the descriptors in the ontology document into the descriptors structure.
-func (s *Descriptors) Add(obj *ontology.OntologyV1SchemaJson) {
+func (s *AllowedDescriptors) Add(obj *ontology.OntologyV1SchemaJson) {
 	if obj == nil || s == nil {
 		return
 	}
@@ -24,7 +25,7 @@ func (s *Descriptors) Add(obj *ontology.OntologyV1SchemaJson) {
 //
 // This requires adding schema knowledge into the non-generated source, due to limitations
 // in the source generator.
-func (s *Descriptors) addDescriptor(
+func (s *AllowedDescriptors) addDescriptor(
 	obj *ontology.OntologyV1SchemaJsonDescriptorsElem,
 	src *sources.OntologySource,
 ) {
@@ -73,34 +74,42 @@ func (s *Descriptors) addDescriptor(
 	}
 }
 
-func (s *Descriptors) addEnum(obj *ontology.EnumDescriptor, src *sources.OntologySource) {
+func (s *AllowedDescriptors) addEnum(obj *ontology.EnumDescriptor, src *sources.OntologySource) {
 	if obj == nil || s == nil {
 		return
 	}
 	sl := src.DocumentSources(obj.Sources)
-	if hasDup("enum", obj.Key, s.Enum, sl, s.Problems) {
+	if s.hasDup(EnumDescriptorType, obj.Key, sl, s.Problems) {
 		return
 	}
 	s.Enum[string(obj.Key)] = &EnumDesc{
-		Comments:     joinComments(obj.Comment, obj.Comments),
+		Comments:     comments.JoinOntComments(obj.Comment, obj.Comments),
 		Distinct:     obj.Distinct,
-		Enum:         obj.Enum,
+		Enum:         enumMap(obj.Enum),
 		Key:          string(obj.Key),
 		MaximumCount: obj.MaximumCount,
 		Sources:      sl,
 	}
 }
 
-func (s *Descriptors) addFree(obj *ontology.FreeDescriptor, src *sources.OntologySource) {
+func enumMap(vals []string) map[string]string {
+	ret := make(map[string]string)
+	for _, v := range vals {
+		ret[v] = v
+	}
+	return ret
+}
+
+func (s *AllowedDescriptors) addFree(obj *ontology.FreeDescriptor, src *sources.OntologySource) {
 	if obj == nil || s == nil {
 		return
 	}
 	sl := src.DocumentSources(obj.Sources)
-	if hasDup("free", obj.Key, s.Enum, sl, s.Problems) {
+	if s.hasDup(FreeDescriptorType, obj.Key, sl, s.Problems) {
 		return
 	}
 	s.Free[string(obj.Key)] = &FreeDesc{
-		Comments:      joinComments(obj.Comment, obj.Comments),
+		Comments:      comments.JoinOntComments(obj.Comment, obj.Comments),
 		Distinct:      obj.Distinct,
 		Key:           string(obj.Key),
 		CaseSensitive: obj.CaseSensitive,
@@ -111,40 +120,42 @@ func (s *Descriptors) addFree(obj *ontology.FreeDescriptor, src *sources.Ontolog
 	}
 }
 
-func (s *Descriptors) addNumeric(obj *ontology.NumericDescriptor, src *sources.OntologySource) {
+func (s *AllowedDescriptors) addNumeric(obj *ontology.NumericDescriptor, src *sources.OntologySource) {
 	if obj == nil || s == nil {
 		return
 	}
 	sl := src.DocumentSources(obj.Sources)
-	if hasDup("enum", obj.Key, s.Enum, sl, s.Problems) {
+	if s.hasDup(NumericDescriptorType, obj.Key, sl, s.Problems) {
 		return
 	}
 	s.Numeric[string(obj.Key)] = &NumericDesc{
-		Comments:     joinComments(obj.Comment, obj.Comments),
+		Comments:     comments.JoinOntComments(obj.Comment, obj.Comments),
 		Distinct:     obj.Distinct,
 		Key:          string(obj.Key),
-		Maximum:      obj.Maximum,
-		Minimum:      obj.Minimum,
+		Maximum:      float64(obj.Maximum),
+		Minimum:      float64(obj.Minimum),
 		MaximumCount: obj.MaximumCount,
 		Sources:      sl,
 	}
 }
 
-func hasDup[T EnumDesc | FreeDesc | NumericDesc](
-	name string,
+func (s *AllowedDescriptors) hasDup(
+	t DescriptorType,
 	key ontology.DescriptorKey,
-	m map[string]*T,
 	src []sources.Source,
 	p *problem.ProblemSet,
 ) bool {
-	if _, ok := m[string(key)]; ok {
+	k := string(key)
+	if _, ok := s.keyTypes[k]; ok {
 		p.AddWarning(
 			src,
-			"%s: duplicate key '%s'",
-			name,
+			"%s: duplicate key (%s)",
+			keyName[t],
 			key,
 		)
+		return true
 	}
+	s.keyTypes[k] = t
 	return false
 }
 
@@ -161,25 +172,10 @@ func convertConstraints(
 
 func convertConstraint(con *ontology.ValueConstraint, src *sources.OntologySource) ValueConstraint {
 	return ValueConstraint{
-		Comments: joinComments(con.Comment, con.Comments),
+		Comments: comments.JoinOntComments(con.Comment, con.Comments),
 		Type:     con.Type,
 		Format:   con.Format,
-		Maximum:  con.Maximum,
-		Minimum:  con.Minimum,
 		Pattern:  con.Pattern,
 		Sources:  src.DocumentSources(con.Sources),
 	}
-}
-
-func joinComments(com *ontology.Comment, cl ontology.CommentList) []string {
-	ret := make([]string, 0)
-	if com != nil && *com != "" {
-		ret = append(ret, string(*com))
-	}
-	for _, c := range cl {
-		if c != "" {
-			ret = append(ret, string(c))
-		}
-	}
-	return ret
 }

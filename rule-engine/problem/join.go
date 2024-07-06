@@ -4,8 +4,12 @@ package problem
 import (
 	"fmt"
 
-	"github.com/groboclown/qazaar-testing/rule-engine/sources"
+	"github.com/groboclown/qazaar-testing/rule-engine/ingest/shared/sources"
 )
+
+func (s *ProblemSet) Done() {
+	// do nothing
+}
 
 // Add adds a problem to the set.
 func (s *ProblemSet) Add(p Problem) {

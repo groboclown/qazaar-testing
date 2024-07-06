@@ -2,22 +2,23 @@
 package sdoc
 
 import (
+	"github.com/groboclown/qazaar-testing/rule-engine/ingest/shared/descriptor"
+	"github.com/groboclown/qazaar-testing/rule-engine/ingest/shared/sources"
 	"github.com/groboclown/qazaar-testing/rule-engine/problem"
 	"github.com/groboclown/qazaar-testing/rule-engine/schema/document"
-	"github.com/groboclown/qazaar-testing/rule-engine/sources"
 )
 
 // DocumentObject is a localized version of the document schema.
 type DocumentObject struct {
 	Comments    []string
-	Descriptors []document.DocumentDescriptor
+	Descriptors []*descriptor.Descriptor
 	Id          document.Id
 	Sources     []sources.Source
 }
 
 // Documents simplifies and unifies the representation of documents.
 type Documents struct {
-	Objects  []DocumentObject
+	Objects  []*DocumentObject
 	Refs     map[document.Id]DocumentRef
 	Problems *problem.ProblemSet
 	sources  *sources.SourceGen
@@ -46,7 +47,7 @@ type DocumentRef struct {
 // New creates a new, shared Documents structure.
 func New() *Documents {
 	return &Documents{
-		Objects:  make([]DocumentObject, 0),
+		Objects:  make([]*DocumentObject, 0),
 		Refs:     make(map[document.Id]DocumentRef),
 		Problems: problem.New(),
 		sources:  sources.SourceGenerator(),

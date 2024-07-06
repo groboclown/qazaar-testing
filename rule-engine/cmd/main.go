@@ -2,11 +2,14 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
 
 	"github.com/groboclown/qazaar-testing/rule-engine/config"
+	"github.com/groboclown/qazaar-testing/rule-engine/problem"
+	"github.com/groboclown/qazaar-testing/rule-engine/validate"
 )
 
 var (
@@ -30,9 +33,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	_, err = readAll(pc)
-	if err != nil {
-		fmt.Printf("Error reading configuration data: %s", err.Error())
-		os.Exit(1)
-	}
+	ctx := context.Background()
+
+	probGen, probRead := problem.Async()
+
+	data := readAll(pc, flag.Args(), probGen, ctx)
+
+	// Validate
+	validate.ValidateDocuments(data.Documents, data.OntDescriptors, probGen)
+
+	probs := probRead.Read(ctx)
+	ReportProblems(probs, os.Stdout)
 }

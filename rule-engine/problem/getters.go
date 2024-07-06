@@ -10,12 +10,16 @@ func (ps *ProblemSet) HasProblems() bool {
 }
 
 func (ps *ProblemSet) Errors() []Problem {
+	return ps.ProblemsAt(Err)
+}
+
+func (ps *ProblemSet) ProblemsAt(level ProblemLevel) []Problem {
 	if ps == nil {
 		return nil
 	}
 	ret := make([]Problem, 0)
 	for _, p := range ps.p {
-		if p.Level == Err {
+		if p.Level == level {
 			ret = append(ret, p)
 		}
 	}

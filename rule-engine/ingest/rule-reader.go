@@ -8,15 +8,15 @@ import (
 	"io"
 	"os"
 
-	"github.com/groboclown/qazaar-testing/rule-engine/ingest/sont"
-	"github.com/groboclown/qazaar-testing/rule-engine/schema/ontology"
+	"github.com/groboclown/qazaar-testing/rule-engine/ingest/srule"
+	"github.com/groboclown/qazaar-testing/rule-engine/schema/rules"
 )
 
-// ReadOntology adds all the ontology files listed in the project configuration.
-func ReadOntology(d *sont.AllowedDescriptors, files []string) error {
+// ReadRule adds all the rule files listed in the project configuration.
+func ReadRule(d *srule.RuleSet, files []string) error {
 	errs := make([]error, 0)
 	for _, f := range files {
-		src, err := ReadOntologyFile(f)
+		src, err := ReadRuleFile(f)
 		if err != nil {
 			errs = append(errs, err)
 		}
@@ -25,16 +25,16 @@ func ReadOntology(d *sont.AllowedDescriptors, files []string) error {
 	return errors.Join(errs...)
 }
 
-func ReadOntologyFile(f string) (*ontology.OntologyV1SchemaJson, error) {
+func ReadRuleFile(f string) (*rules.RulesV1SchemaJson, error) {
 	r, err := os.Open(f)
 	if err != nil {
 		return nil, err
 	}
-	return ParseOntology(r, f)
+	return ParseRule(r, f)
 }
 
-func ParseOntology(r io.Reader, src string) (*ontology.OntologyV1SchemaJson, error) {
-	var ret ontology.OntologyV1SchemaJson
+func ParseRule(r io.Reader, src string) (*rules.RulesV1SchemaJson, error) {
+	var ret rules.RulesV1SchemaJson
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %s", src, err.Error())

@@ -56,6 +56,7 @@
         "values": {
           "title": "Descriptor Value List",
           "description": "The descriptor values.  Each entry must conform to the descriptor key's value types.",
+          "type": "array",
           "minLength": 0,
           "maxLength": 100000,
           "items": {"$ref": "#/$defs/DescriptorValue"}

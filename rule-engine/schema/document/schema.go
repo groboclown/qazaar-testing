@@ -147,8 +147,10 @@ type DocumentDescriptor struct {
 
 	// The descriptor values.  Each entry must conform to the descriptor key's value
 	// types.
-	Values interface{} `json:"values" yaml:"values" mapstructure:"values"`
+	Values []DocumentDescriptorValuesElem `json:"values" yaml:"values" mapstructure:"values"`
 }
+
+type DocumentDescriptorValuesElem interface{}
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (j *DocumentDescriptor) UnmarshalJSON(b []byte) error {

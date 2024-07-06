@@ -35,7 +35,7 @@
       "title": "Group",
       "description": "A self-organizing group definition.",
       "type": "object",
-      "required": ["sharedValues"],
+      "required": ["id", "sharedValues"],
       "additionalProperties": false,
       "properties": {
         "$comment": {"$ref": "#/$defs/Comment"},
@@ -90,7 +90,7 @@
       "title": "Rule",
       "description": "A rule which includes matching descriptors and implications.",
       "type": "object",
-      "required": ["matchingDescriptors"],
+      "required": ["id", "matchingDescriptors"],
       "additionalProperties": false,
       "properties": {
         "$comment": {"$ref": "#/$defs/Comment"},
@@ -247,18 +247,15 @@
 
     "MatchingDescriptor": {
       "oneOf": [
-        {"$ref": "OrMatcher"},
-        {"$ref": "AndMatcher"},
+        {"$ref": "CollectionMatcher"},
         {"$ref": "NotMatcher"},
-        {"$ref": "ContainsSomeMatcher"},
-        {"$ref": "ContainsAllMatcher"},
-        {"$ref": "ContainsOnlyMatcher"}
+        {"$ref": "ContainsMatcher"}
       ]
     },
 
-    "OrMatcher": {
-      "title": "Or Matcher",
-      "description": "A collection of sub-matchers, of which at least one must match.",
+    "CollectionMatcher": {
+      "title": "Collection Matcher",
+      "description": "A collection of sub-matchers, or: of which at least one must match; and: all must match.",
       "type": "object",
       "required": ["type", "collection"],
       "additionalProperties": false,
@@ -271,27 +268,10 @@
           "title": "Descriptor Matcher Type",
           "description": "The type of descriptor matcher defined by this definition.",
           "type": "string",
-          "const": "or"
-        },
-        "collection": {"$ref": "#/$defs/MatcherCollection"}
-      }
-    },
-    "AndMatcher": {
-      "title": "And Matcher",
-      "description": "A collection of sub-matchers, of which all must match.",
-      "type": "object",
-      "required": ["type", "collection"],
-      "additionalProperties": false,
-      "properties": {
-        "$comment": {"$ref": "#/$defs/Comment"},
-        "$comments": {"$ref": "#/$defs/CommentList"},
-        "sources": {"$ref": "#/$defs/DocumentSources"},
-
-        "type": {
-          "title": "Descriptor Matcher Type",
-          "description": "The type of descriptor matcher defined by this definition.",
-          "type": "string",
-          "const": "and"
+          "enum": [
+            "or",
+            "and"
+          ]
         },
         "collection": {"$ref": "#/$defs/MatcherCollection"}
       }
@@ -311,16 +291,16 @@
           "title": "Descriptor Matcher Type",
           "description": "The type of descriptor matcher defined by this definition.",
           "type": "string",
-          "const": "not"
+          "enum": ["not"]
         },
         "matcher": {"$ref": "#/$defs/MatchingDescriptor"}
       }
     },
-    "ContainsSomeMatcher": {
-      "title": "Contains Some Matcher",
-      "description": "Inverts the matching result of a sub-matcher.",
+    "ContainsMatcher": {
+      "title": "Contains Matcher",
+      "description": "containsSome: Ensures the descriptor's values contain at least one of the values in this matcher.  containsAll: Ensures the descriptor's values contain all of this matcher's values; could contain more.  containsExactly: Ensures the descriptor's values contain all of this matcher's values and no more.  containsOnly: Ensures the descriptor's values are restricted to the matcher's values; cannot contain other values.",
       "type": "object",
-      "required": ["type", "key", "like"],
+      "required": ["type", "key", "matcher"],
       "additionalProperties": false,
       "properties": {
         "$comment": {"$ref": "#/$defs/Comment"},
@@ -345,77 +325,14 @@
           "title": "Descriptor Matcher Type",
           "description": "The type of descriptor matcher defined by this definition.",
           "type": "string",
-          "const": "not"
+          "enum": [
+            "containsSome",
+            "containsAll",
+            "containsExactly",
+            "containsOnly"
+          ]
         },
-        "matcher": {"$ref": "#/$defs/MatchingDescriptor"}
-      }
-    },
-    "ContainsAllMatcher": {
-      "title": "Not Matcher",
-      "description": "Inverts the matching result of a sub-matcher.",
-      "type": "object",
-      "required": ["type", "matcher"],
-      "additionalProperties": false,
-      "properties": {
-        "$comment": {"$ref": "#/$defs/Comment"},
-        "$comments": {"$ref": "#/$defs/CommentList"},
-        "sources": {"$ref": "#/$defs/DocumentSources"},
-
-        "key": {"$ref": "#/$defs/DescriptorKey"},
-        "count": {
-          "title": "Value Count",
-          "descriptor": "Matches on the number of values, rather than the values themselves.  If combined with 'distinct', then this counts the number of distinct values.",
-          "type": "boolean",
-          "default": false
-        },
-        "distinct": {
-          "title": "Distinct Values",
-          "descriptor": "Matches on the distinct values subset.",
-          "type": "boolean",
-          "default": false
-        },
-
-        "type": {
-          "title": "Descriptor Matcher Type",
-          "description": "The type of descriptor matcher defined by this definition.",
-          "type": "string",
-          "const": "not"
-        },
-        "matcher": {"$ref": "#/$defs/MatchingDescriptor"}
-      }
-    },
-    "ContainsOnlyMatcher": {
-      "title": "Not Matcher",
-      "description": "Inverts the matching result of a sub-matcher.",
-      "type": "object",
-      "required": ["type", "matcher"],
-      "additionalProperties": false,
-      "properties": {
-        "$comment": {"$ref": "#/$defs/Comment"},
-        "$comments": {"$ref": "#/$defs/CommentList"},
-        "sources": {"$ref": "#/$defs/DocumentSources"},
-
-        "key": {"$ref": "#/$defs/DescriptorKey"},
-        "count": {
-          "title": "Value Count",
-          "descriptor": "Matches on the number of values, rather than the values themselves.  If combined with 'distinct', then this counts the number of distinct values.",
-          "type": "boolean",
-          "default": false
-        },
-        "distinct": {
-          "title": "Distinct Values",
-          "descriptor": "Matches on the distinct values subset.",
-          "type": "boolean",
-          "default": false
-        },
-
-        "type": {
-          "title": "Descriptor Matcher Type",
-          "description": "The type of descriptor matcher defined by this definition.",
-          "type": "string",
-          "const": "not"
-        },
-        "matcher": {"$ref": "#/$defs/MatchingDescriptor"}
+        "matcher": {"$ref": "#/$defs/ValueCheckList"}
       }
     },
     "MatcherCollection": {
@@ -437,17 +354,15 @@
     },
     "ValueCheck": {
       "oneOf": [
-        {"$ref": "#/$defs/OrCheck"},
-        {"$ref": "#/$defs/AndCheck"},
+        {"$ref": "#/$defs/CollectionCheck"},
         {"$ref": "#/$defs/NotCheck"},
-        {"$ref": "#/$defs/StringPatternCheck"},
-        {"$ref": "#/$defs/StringEqualCheck"},
-        {"$ref": "#/$defs/NumericWithinCheck"}
+        {"$ref": "#/$defs/StringCheck"},
+        {"$ref": "#/$defs/NumericBoundsCheck"}
       ]
     },
-    "OrCheck": {
-      "title": "Or Collection Value Check",
-      "description": "A check on a collection of value checks, at least one of which must pass.",
+    "CollectionCheck": {
+      "title": "Collection Value Check",
+      "description": "A check on a collection of value checks, or: at least one of which must pass; and: all of which must pass.",
       "type": "object",
       "required": ["type", "collection"],
       "additionalProperties": false,
@@ -460,27 +375,7 @@
           "title": "Value Check Type",
           "description": "Marks the check as for a specific type.",
           "type": "string",
-          "const": "or"
-        },
-        "collection": {"$ref": "#/$defs/ValueCheckList"}
-      }
-    },
-    "AndCheck": {
-      "title": "And Collection Value Check",
-      "description": "A check on a collection of value checks, all of which must pass.",
-      "type": "object",
-      "required": ["type", "collection"],
-      "additionalProperties": false,
-      "properties": {
-        "$comment": {"$ref": "#/$defs/Comment"},
-        "$comments": {"$ref": "#/$defs/CommentList"},
-        "sources": {"$ref": "#/$defs/DocumentSources"},
-
-        "type": {
-          "title": "Value Check Type",
-          "description": "Marks the check as for a specific type.",
-          "type": "string",
-          "const": "and"
+          "enum": ["or", "and"]
         },
         "collection": {"$ref": "#/$defs/ValueCheckList"}
       }
@@ -500,16 +395,16 @@
           "title": "Value Check Type",
           "description": "Marks the check as for a specific type.",
           "type": "string",
-          "const": "and"
+          "enum": ["not"]
         },
         "check": {"$ref": "#/$defs/ValueCheck"}
       }
     },
-    "StringPatternCheck": {
-      "title": "Value String Pattern Check",
-      "description": "A regular-expression pattern for string values.  Expression pattern checking follows the value's case sensitivity ontology setting.",
+    "StringCheck": {
+      "title": "Value String Check",
+      "description": "A string equality or (non-lookahead) regular-expression pattern for string values.  Expression pattern checking follows the value's case sensitivity ontology setting.",
       "type": "object",
-      "required": ["type", "pattern"],
+      "required": ["type", "text"],
       "additionalProperties": false,
       "properties": {
         "$comment": {"$ref": "#/$defs/Comment"},
@@ -520,31 +415,12 @@
           "title": "Value Check Type",
           "description": "Marks the check as for a specific type.",
           "type": "string",
-          "const": "pattern"
-        }
-      }
-    },
-    "StringEqualCheck": {
-      "title": "Value String Equal Check",
-      "description": "An exact match for string values.  Equality checking follows the value's case sensitivity ontology setting.",
-      "type": "object",
-      "required": ["type", "equals"],
-      "additionalProperties": false,
-      "properties": {
-        "$comment": {"$ref": "#/$defs/Comment"},
-        "$comments": {"$ref": "#/$defs/CommentList"},
-        "sources": {"$ref": "#/$defs/DocumentSources"},
-
-        "type": {
-          "title": "Value Check Type",
-          "description": "Marks the check as for a specific type.",
-          "type": "string",
-          "const": "equal"
+          "enum": ["pattern", "equal"]
         },
-        "equals": {"$ref": "#/$defs/DescriptorTextValue"}
+        "text": {"$ref": "#/$defs/DescriptorTextValue"}
       }
     },
-    "NumericWithinCheck": {
+    "NumericBoundsCheck": {
       "title": "Value Numerically Within Bounds Check",
       "description": "A check for whether a numeric value obeys a boundary.  (Minimum and maximum allowed values come from the ontology)",
       "type": "object",
@@ -559,7 +435,7 @@
           "title": "Value Check Type",
           "description": "Marks the check as for a specific type.",
           "type": "string",
-          "const": "within"
+          "enum": ["within"]
         },
         "minimum": {"$ref": "#/$defs/DescriptorNumericValue"},
         "maximum": {"$ref": "#/$defs/DescriptorNumericValue"}
