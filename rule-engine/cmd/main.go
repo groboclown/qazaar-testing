@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/groboclown/qazaar-testing/rule-engine/config"
+	"github.com/groboclown/qazaar-testing/rule-engine/ingest"
 	"github.com/groboclown/qazaar-testing/rule-engine/problem"
 	"github.com/groboclown/qazaar-testing/rule-engine/validate"
 )
@@ -35,9 +36,9 @@ func main() {
 
 	ctx := context.Background()
 
-	probGen, probRead := problem.Async()
+	probGen, probRead := problem.Async(ctx)
 
-	data := readAll(pc, flag.Args(), probGen, ctx)
+	data := ingest.ReadAll(pc, flag.Args(), probGen, ctx)
 
 	// Validate
 	validate.ValidateDocuments(data.Documents, data.OntDescriptors, probGen)

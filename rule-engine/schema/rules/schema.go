@@ -95,76 +95,6 @@ func (j *Alteration) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// A check on a collection of value checks, or: at least one of which must pass;
-// and: all of which must pass.
-type CollectionCheck struct {
-	// Comment corresponds to the JSON schema field "$comment".
-	Comment *Comment `json:"$comment,omitempty" yaml:"$comment,omitempty" mapstructure:"$comment,omitempty"`
-
-	// Comments corresponds to the JSON schema field "$comments".
-	Comments CommentList `json:"$comments,omitempty" yaml:"$comments,omitempty" mapstructure:"$comments,omitempty"`
-
-	// Collection corresponds to the JSON schema field "collection".
-	Collection ValueCheckList `json:"collection" yaml:"collection" mapstructure:"collection"`
-
-	// Sources corresponds to the JSON schema field "sources".
-	Sources DocumentSources `json:"sources,omitempty" yaml:"sources,omitempty" mapstructure:"sources,omitempty"`
-
-	// Marks the check as for a specific type.
-	Type CollectionCheckType `json:"type" yaml:"type" mapstructure:"type"`
-}
-
-type CollectionCheckType string
-
-const CollectionCheckTypeAnd CollectionCheckType = "and"
-const CollectionCheckTypeOr CollectionCheckType = "or"
-
-var enumValues_CollectionCheckType = []interface{}{
-	"or",
-	"and",
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *CollectionCheckType) UnmarshalJSON(b []byte) error {
-	var v string
-	if err := json.Unmarshal(b, &v); err != nil {
-		return err
-	}
-	var ok bool
-	for _, expected := range enumValues_CollectionCheckType {
-		if reflect.DeepEqual(v, expected) {
-			ok = true
-			break
-		}
-	}
-	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_CollectionCheckType, v)
-	}
-	*j = CollectionCheckType(v)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *CollectionCheck) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if _, ok := raw["collection"]; raw != nil && !ok {
-		return fmt.Errorf("field collection in CollectionCheck: required")
-	}
-	if _, ok := raw["type"]; raw != nil && !ok {
-		return fmt.Errorf("field type in CollectionCheck: required")
-	}
-	type Plain CollectionCheck
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = CollectionCheck(plain)
-	return nil
-}
-
 // A collection of sub-matchers, or: of which at least one must match; and: all
 // must match.
 type CollectionMatcher struct {
@@ -371,14 +301,14 @@ type ContainsMatcher struct {
 	// Key corresponds to the JSON schema field "key".
 	Key DescriptorKey `json:"key" yaml:"key" mapstructure:"key"`
 
-	// Matcher corresponds to the JSON schema field "matcher".
-	Matcher ValueCheckList `json:"matcher" yaml:"matcher" mapstructure:"matcher"`
-
 	// Sources corresponds to the JSON schema field "sources".
 	Sources DocumentSources `json:"sources,omitempty" yaml:"sources,omitempty" mapstructure:"sources,omitempty"`
 
 	// The type of descriptor matcher defined by this definition.
 	Type ContainsMatcherType `json:"type" yaml:"type" mapstructure:"type"`
+
+	// Values corresponds to the JSON schema field "values".
+	Values ValueCheckList `json:"values,omitempty" yaml:"values,omitempty" mapstructure:"values,omitempty"`
 }
 
 type ContainsMatcherType string
@@ -423,9 +353,6 @@ func (j *ContainsMatcher) UnmarshalJSON(b []byte) error {
 	}
 	if _, ok := raw["key"]; raw != nil && !ok {
 		return fmt.Errorf("field key in ContainsMatcher: required")
-	}
-	if _, ok := raw["matcher"]; raw != nil && !ok {
-		return fmt.Errorf("field matcher in ContainsMatcher: required")
 	}
 	if _, ok := raw["type"]; raw != nil && !ok {
 		return fmt.Errorf("field type in ContainsMatcher: required")
@@ -611,75 +538,6 @@ type ImplicationLevel string
 type MatcherCollection []interface{}
 
 type MatchingDescriptor interface{}
-
-// Inverts the contained value check.
-type NotCheck struct {
-	// Comment corresponds to the JSON schema field "$comment".
-	Comment *Comment `json:"$comment,omitempty" yaml:"$comment,omitempty" mapstructure:"$comment,omitempty"`
-
-	// Comments corresponds to the JSON schema field "$comments".
-	Comments CommentList `json:"$comments,omitempty" yaml:"$comments,omitempty" mapstructure:"$comments,omitempty"`
-
-	// Check corresponds to the JSON schema field "check".
-	Check NotCheckCheck `json:"check" yaml:"check" mapstructure:"check"`
-
-	// Sources corresponds to the JSON schema field "sources".
-	Sources DocumentSources `json:"sources,omitempty" yaml:"sources,omitempty" mapstructure:"sources,omitempty"`
-
-	// Marks the check as for a specific type.
-	Type NotCheckType `json:"type" yaml:"type" mapstructure:"type"`
-}
-
-type NotCheckCheck interface{}
-
-type NotCheckType string
-
-const NotCheckTypeNot NotCheckType = "not"
-
-var enumValues_NotCheckType = []interface{}{
-	"not",
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *NotCheckType) UnmarshalJSON(b []byte) error {
-	var v string
-	if err := json.Unmarshal(b, &v); err != nil {
-		return err
-	}
-	var ok bool
-	for _, expected := range enumValues_NotCheckType {
-		if reflect.DeepEqual(v, expected) {
-			ok = true
-			break
-		}
-	}
-	if !ok {
-		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_NotCheckType, v)
-	}
-	*j = NotCheckType(v)
-	return nil
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *NotCheck) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if _, ok := raw["check"]; raw != nil && !ok {
-		return fmt.Errorf("field check in NotCheck: required")
-	}
-	if _, ok := raw["type"]; raw != nil && !ok {
-		return fmt.Errorf("field type in NotCheck: required")
-	}
-	type Plain NotCheck
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	*j = NotCheck(plain)
-	return nil
-}
 
 // Inverts the matching result of a sub-matcher.
 type NotMatcher struct {

@@ -108,9 +108,8 @@ type ContainsMatcher struct {
 }
 
 type ValueCheckSet struct {
-	Collection []CollectionCheck
-	String     []StringCheck
-	Numeric    []NumericBoundsCheck
+	String  []StringCheck
+	Numeric []NumericBoundsCheck
 }
 
 type CollectionCheckOperation int

@@ -1,0 +1,144 @@
+{
+    "$schema": "https://raw.githubusercontent.com/groboclown/qazaar-testing/main/data-exchange/schema/rules.v1.schema.json",
+    "commonSourceRefs": [],
+    "groups": [
+        {
+            "id": "structure-field-consistency",
+            "$comment": "A self-organizing group relation for each field in the structure.",
+            "sharedValues": [
+                "structure", "field-name"
+            ],
+            "matchingDescriptors": [
+                {
+                    "key": "data-type",
+                    "type": "containsExactly",
+                    "values": [{
+                        "type": "equal",
+                        "text": "field"
+                    }]
+                },
+                {
+                    "type": "not",
+                    "matcher": [{
+                        "key": "visibility",
+                        "type": "containsSome",
+                        "values": [{
+                            "type": "equal",
+                            "text": "private"
+                        }]
+                    }]
+                }
+            ],
+            "alterations": [
+                {
+                    "key": "sog-type",
+                    "action": "set",
+                    "values": ["structure-field"]
+                }
+            ]
+        },
+        {
+            "id": "structure-consistency",
+            "$comment": "A self-organizing group relation for each structure, built on top of the field SOGs.",
+            "matchingDescriptors": [
+                {
+                    "key": "sog-type",
+                    "type": "containsExactly",
+                    "values": [{
+                        "type": "equal",
+                        "text": "structure-field"
+                    }]
+                },
+                {
+                    "key": "structure",
+                    "type": "containsExactly",
+                    "count": true,
+                    "values": [{"type": "within", "minimum": 1, "maximum": 1}]
+                }
+            ],
+            "sharedValues": [
+                "structure"
+            ],
+            "alterations": [
+                {
+                    "key": "sog-type",
+                    "action": "set",
+                    "values": ["structure"]
+                }
+            ],
+            "convergences": [
+                {
+                    "$comment": "Each member of the SOG must have the same set of field-names as all the others.",
+                    "level": "error",
+                    "key": "field-name",
+                    "requires": "allMatch"
+                }
+            ]
+        }
+    ],
+    "rules": [
+        {
+            "id": "field-declaration-consistency",
+            "matchingDescriptors": [
+                {
+                    "key": "data-type",
+                    "type": "containsExactly",
+                    "values": [{"type": "equal", "text": "field"}]
+                }
+            ],
+            "conformities": [
+                {
+                    "level": "error",
+                    "matcher": {
+                        "type": "containsSome",
+                        "count": true,
+                        "key": "structure",
+                        "values": [{"type": "within", "minimum": 1, "maximum": 1}]
+                    }
+                },
+                {
+                    "level": "error",
+                    "matcher": {
+                        "type": "containsSome",
+                        "count": true,
+                        "key": "field-name",
+                        "values": [{"type": "within", "minimum": 1, "maximum": 1}]
+                    }
+                },
+                {
+                    "level": "error",
+                    "matcher": {
+                        "type": "containsSome",
+                        "count": true,
+                        "key": "field-type",
+                        "values": [{"type": "within", "minimum": 1, "maximum": 1}]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "sog-field-type-has-structure",
+            "$comment": "A simple rule for the generated structure-field SOGs",
+            "matchingDescriptors": [
+                {
+                    "key": "sog-type",
+                    "type": "containsExactly",
+                    "values": [{"type": "equal", "text": "structure-field"}]
+                }
+            ],
+            "conformities": [
+                {
+                    "$comment": "Because the constructed SOG joins the members' values together into an array, having a 'distinct' on the field-type means that all the field-type values must be the same.",
+                    "level": "error",
+                    "matcher": {
+                        "key": "field-type",
+                        "type": "containsExactly",
+                        "count": true,
+                        "distinct": true,
+                        "values": [{"type": "within", "minimum": 1, "maximum": 1}]
+                    }
+                }
+            ]
+        }
+    ]
+}

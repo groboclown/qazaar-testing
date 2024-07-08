@@ -121,7 +121,6 @@ And that produces these rules:
     - `sog-type = structure-field`
   - Has conformity implications:
     - `count(distinct(field-type)) = 1`; because the constructed SOG joins the members' values together into an array, having a 'distinct' on the field-type means that all the field-type values must be the same.
-  - Has no convergence implications.
 - A self-organizing group relation for each structure, built on top of the field SOGs.
   - Has matching descriptors:
     - `sog-type = "structure-field`

@@ -1,0 +1,60 @@
+{
+    "$schema": "https://raw.githubusercontent.com/groboclown/qazaar-testing/main/data-exchange/schema/ontology.v1.schema.json",
+    "commonSourceRefs": [],
+    "descriptors": [
+        {
+            "key": "data-type",
+            "type": "enum",
+            "enum": [
+                "structure", "field"
+            ],
+            "maximumCount": 1
+        },
+        {
+            "key": "structure",
+            "type": "free",
+            "maximumCount": 1,
+            "maximumLength": 200
+        },
+        {
+            "$comment": "> 1 field-name allowed for the SOG of the structures.  A separate rule for structure fields requires this to be 1.",
+            "key": "field-name",
+            "type": "free",
+            "maximumCount": 100,
+            "maximumLength": 200
+        },
+        {
+            "key": "field-type",
+            "type": "enum",
+            "enum": [
+                "string",
+                "int",
+                "float",
+                "boolean"
+            ],
+            "maximumCount": 1
+        },
+        {
+            "key": "field-size",
+            "type": "free",
+            "maximumCount": 1,
+            "constraints": [
+                {
+                    "type": "pattern",
+                    "pattern": "^0-9+(,0-9+)?$"
+                }
+            ]
+        },
+        {
+            "key": "visibility",
+            "type": "enum",
+            "enum": ["private", "public"]
+        },
+        {
+            "key": "sog-type",
+            "type": "free",
+            "maximumCount": 1,
+            "maximumLength": 10000
+        }
+    ]
+}

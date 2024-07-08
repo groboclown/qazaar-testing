@@ -29,7 +29,7 @@ func New() *ProblemSet {
 }
 
 type Adder interface {
-	Done()
+	Complete()
 	Error(source string, err ...error)
 	Add(p Problem)
 	AddError(

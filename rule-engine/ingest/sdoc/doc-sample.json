@@ -1,0 +1,28 @@
+{
+    "$schema": "https://raw.githubusercontent.com/groboclown/qazaar-testing/main/data-exchange/schema/document-description.v1.schema.json",
+    "commonSourceRefs": [
+        {
+            "id": "doc-sample-1",
+            "rep": "git",
+            "loc": "github.com/groboclown/qazaar-testing/rule-engine/inject/sdoc/doc-sample.json"
+        }
+    ],
+    "objects": [
+        {
+            "id": "d1",
+            "sources": [
+                {"ref": "doc-sample-1", "a": "1"}
+            ],
+            "descriptors": [
+                {
+                    "key": "req1",
+                    "values": ["a", "b"]
+                },
+                {
+                    "key": "req2",
+                    "values": [1.1, 2]
+                }
+            ]
+        }
+    ]
+}

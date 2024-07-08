@@ -70,22 +70,22 @@ func addMatcher[
 			},
 			string(rules.ContainsMatcherTypeContainsSome): func(val map[string]any) error {
 				return newContainsMatcher(
-					m, ContainsSome, val, src, probs,
+					m, ContainsSome, val, probs,
 				)
 			},
 			string(rules.ContainsMatcherTypeContainsAll): func(val map[string]any) error {
 				return newContainsMatcher(
-					m, ContainsAll, val, src, probs,
+					m, ContainsAll, val, probs,
 				)
 			},
 			string(rules.ContainsMatcherTypeContainsExactly): func(val map[string]any) error {
 				return newContainsMatcher(
-					m, ContainsExactly, val, src, probs,
+					m, ContainsExactly, val, probs,
 				)
 			},
 			string(rules.ContainsMatcherTypeContainsOnly): func(val map[string]any) error {
 				return newContainsMatcher(
-					m, ContainsOnly, val, src, probs,
+					m, ContainsOnly, val, probs,
 				)
 			},
 		},
@@ -122,7 +122,6 @@ func newContainsMatcher(
 	m *MatchingDescriptorSet,
 	operation ContainsOperation,
 	val map[string]any,
-	src *sources.RulesSource,
 	probs *problem.ProblemSet,
 ) error {
 	var match rules.ContainsMatcher
@@ -135,20 +134,18 @@ func newContainsMatcher(
 		Count:     match.Count,
 		Distinct:  match.Distinct,
 		Key:       string(match.Key),
-		Checks:    joinChecks(match.Matcher, src, probs),
+		Checks:    joinChecks(match.Values, probs),
 	})
 	return nil
 }
 
 func joinChecks(
 	checks rules.ValueCheckList,
-	src *sources.RulesSource,
 	probs *problem.ProblemSet,
 ) ValueCheckSet {
 	ret := &ValueCheckSet{
-		Collection: make([]CollectionCheck, 0),
-		String:     make([]StringCheck, 0),
-		Numeric:    make([]NumericBoundsCheck, 0),
+		String:  make([]StringCheck, 0),
+		Numeric: make([]NumericBoundsCheck, 0),
 	}
 	for _, c := range checks {
 		err := sel.TypeSelector(
@@ -158,23 +155,6 @@ func joinChecks(
 				},
 				string(rules.StringCheckTypePattern): func(val map[string]any) error {
 					return addStringCheck(val, true, ret)
-				},
-				string(rules.CollectionCheckTypeAnd): func(val map[string]any) error {
-					return addCollectionCheck(val, AndCheck, ret, src, probs)
-				},
-				string(rules.CollectionCheckTypeOr): func(val map[string]any) error {
-					return addCollectionCheck(val, OrCheck, ret, src, probs)
-				},
-				string(rules.NotCheckTypeNot): func(val map[string]any) error {
-					var check rules.NotCheck
-					if err := mapstructure.Decode(val, &check); err != nil {
-						return err
-					}
-					ret.Collection = append(ret.Collection, CollectionCheck{
-						Operation:  NotCheck,
-						Collection: joinChecks(rules.ValueCheckList{check.Check}, src, probs),
-					})
-					return nil
 				},
 			},
 		)
@@ -207,24 +187,5 @@ func addStringCheck(val map[string]any, asRe bool, checks *ValueCheckSet) error 
 	}
 
 	checks.String = append(checks.String, re)
-	return nil
-}
-
-func addCollectionCheck(
-	val map[string]any,
-	opr CollectionCheckOperation,
-	checks *ValueCheckSet,
-	src *sources.RulesSource,
-	probs *problem.ProblemSet,
-) error {
-	var check rules.CollectionCheck
-	if err := mapstructure.Decode(val, &check); err != nil {
-		return err
-	}
-	col := joinChecks(check.Collection, src, probs)
-	checks.Collection = append(checks.Collection, CollectionCheck{
-		Operation:  opr,
-		Collection: col,
-	})
 	return nil
 }

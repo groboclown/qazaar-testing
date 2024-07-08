@@ -2,6 +2,9 @@
 package validate
 
 import (
+	"fmt"
+	"regexp"
+
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest/shared/descriptor"
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest/shared/sources"
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest/sont"
@@ -180,6 +183,37 @@ func checkConstraint(
 	}
 	switch con.Type {
 	case ontology.ValueConstraintTypeFormat:
+		probs.AddWarning(
+			src,
+			"%s: value constraint type '%s' not supported.",
+			key,
+			ontology.ValueConstraintTypeFormat,
+		)
 	case ontology.ValueConstraintTypePattern:
+		if con.Pattern == nil {
+			probs.AddError(
+				src,
+				"%s: invalid value constraint; no pattern for 'pattern' type",
+				key,
+			)
+			return
+		}
+		re, err := regexp.Compile(*con.Pattern)
+		if err != nil {
+			probs.Error(
+				fmt.Sprintf("%s: invalid value constraint pattern '%s'", key, *con.Pattern),
+				err,
+			)
+			return
+		}
+		if !re.Match([]byte(val)) {
+			probs.AddError(
+				src,
+				"%s: value (%s) does not match constraint pattern (%s)",
+				key,
+				val,
+				con.Pattern,
+			)
+		}
 	}
 }

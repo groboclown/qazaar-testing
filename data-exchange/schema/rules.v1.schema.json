@@ -189,7 +189,9 @@
           "title": "List of Alteration Values",
           "description": "Values to alter in the descriptor.  For 'add' operation, all the values are added, even if they already exist.  For 'remove' operation, any matching value is removed; but only once for each value in this list.  For 'addDistinct', then the value is added only if it does not already exist.  For 'removeDistinct', all values that match are removed, regardless of the number of them.  For 'set', the values are replaced with the new values.",
           "type": "array",
-          "items": {"$ref": "#/$defs/DescriptorValue"}
+          "items": {"$ref": "#/$defs/DescriptorValue"},
+          "minLength": 0,
+          "maximumLength": 100
         }
       }
     },
@@ -247,9 +249,9 @@
 
     "MatchingDescriptor": {
       "oneOf": [
-        {"$ref": "CollectionMatcher"},
-        {"$ref": "NotMatcher"},
-        {"$ref": "ContainsMatcher"}
+        {"$ref": "#/$defs/CollectionMatcher"},
+        {"$ref": "#/$defs/NotMatcher"},
+        {"$ref": "#/$defs/ContainsMatcher"}
       ]
     },
 
@@ -332,7 +334,7 @@
             "containsOnly"
           ]
         },
-        "matcher": {"$ref": "#/$defs/ValueCheckList"}
+        "values": {"$ref": "#/$defs/ValueCheckList"}
       }
     },
     "MatcherCollection": {
@@ -354,51 +356,9 @@
     },
     "ValueCheck": {
       "oneOf": [
-        {"$ref": "#/$defs/CollectionCheck"},
-        {"$ref": "#/$defs/NotCheck"},
         {"$ref": "#/$defs/StringCheck"},
         {"$ref": "#/$defs/NumericBoundsCheck"}
       ]
-    },
-    "CollectionCheck": {
-      "title": "Collection Value Check",
-      "description": "A check on a collection of value checks, or: at least one of which must pass; and: all of which must pass.",
-      "type": "object",
-      "required": ["type", "collection"],
-      "additionalProperties": false,
-      "properties": {
-        "$comment": {"$ref": "#/$defs/Comment"},
-        "$comments": {"$ref": "#/$defs/CommentList"},
-        "sources": {"$ref": "#/$defs/DocumentSources"},
-
-        "type": {
-          "title": "Value Check Type",
-          "description": "Marks the check as for a specific type.",
-          "type": "string",
-          "enum": ["or", "and"]
-        },
-        "collection": {"$ref": "#/$defs/ValueCheckList"}
-      }
-    },
-    "NotCheck": {
-      "title": "Not Value Check",
-      "description": "Inverts the contained value check.",
-      "type": "object",
-      "required": ["type", "check"],
-      "additionalProperties": false,
-      "properties": {
-        "$comment": {"$ref": "#/$defs/Comment"},
-        "$comments": {"$ref": "#/$defs/CommentList"},
-        "sources": {"$ref": "#/$defs/DocumentSources"},
-
-        "type": {
-          "title": "Value Check Type",
-          "description": "Marks the check as for a specific type.",
-          "type": "string",
-          "enum": ["not"]
-        },
-        "check": {"$ref": "#/$defs/ValueCheck"}
-      }
     },
     "StringCheck": {
       "title": "Value String Check",

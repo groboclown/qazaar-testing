@@ -17,15 +17,49 @@ type ProblemConsumer interface {
 }
 
 type asyncProblemConsumer struct {
-	in <-chan *Problem
+	complete *ProblemSet
+	done     <-chan *ProblemSet
 }
 
-func Async() (Adder, ProblemConsumer) {
+func Async(ctx context.Context) (Adder, ProblemConsumer) {
 	ch := make(chan *Problem)
-	return &asyncProblemGenerator{out: ch}, &asyncProblemConsumer{in: ch}
+	done := make(chan *ProblemSet)
+
+	go func() {
+		defer close(done)
+		ret := New()
+
+		for {
+			select {
+			case p, ok := <-ch:
+				if p != nil {
+					ret.Add(*p)
+				}
+				if !ok {
+					done <- ret
+					return
+				}
+			case <-ctx.Done():
+				err := context.Cause(ctx)
+				if err != nil {
+					ret.AddError(
+						nil,
+						"internal error: %s",
+						err.Error(),
+					)
+				}
+				close(ch)
+				done <- ret
+				return
+			}
+		}
+	}()
+
+	// TODO start the consumer in a go function, so it doesn't block the generator.
+	return &asyncProblemGenerator{out: ch}, &asyncProblemConsumer{done: done}
 }
 
-func (pg *asyncProblemGenerator) Done() {
+func (pg *asyncProblemGenerator) Complete() {
 	if pg != nil {
 		close(pg.out)
 	}
@@ -88,27 +122,18 @@ func (pg *asyncProblemGenerator) AddProblem(
 }
 
 func (c *asyncProblemConsumer) Read(ctx context.Context) *ProblemSet {
-	ret := New()
-	for {
-		select {
-		case p, ok := <-c.in:
-			if p != nil {
-				ret.Add(*p)
-			}
-			if !ok {
-				return ret
-			}
-		case <-ctx.Done():
-			err := context.Cause(ctx)
-			if err != nil {
-				ret.AddError(
-					nil,
-					"internal error: %s",
-					err.Error(),
-				)
-			}
-			// Should close the channel...
-			return ret
-		}
+	if c == nil {
+		return nil
+	}
+	if c.complete != nil {
+		return c.complete
+	}
+
+	select {
+	case p := <-c.done:
+		c.complete = p
+		return p
+	case <-ctx.Done():
+		return nil
 	}
 }

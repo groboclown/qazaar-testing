@@ -1,11 +1,10 @@
 // Under the Apache-2.0 License
-package main
+package ingest
 
 import (
 	"context"
 
 	"github.com/groboclown/qazaar-testing/rule-engine/config"
-	"github.com/groboclown/qazaar-testing/rule-engine/ingest"
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest/sdoc"
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest/sont"
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest/srule"
@@ -15,21 +14,21 @@ import (
 	"github.com/groboclown/qazaar-testing/rule-engine/schema/rules"
 )
 
-type allData struct {
+type AllData struct {
 	OntDescriptors *sont.AllowedDescriptors
 	RuleSets       *srule.RuleSet
 	Documents      *sdoc.Documents
 }
 
-// readAll reads and parses all the data asynchronously.
-func readAll(
+// ReadAll reads and parses all the data asynchronously.
+func ReadAll(
 	c *config.ProjectConfig,
 	docFiles []string,
 	probs problem.Adder,
 	ctx context.Context,
-) *allData {
+) *AllData {
 
-	ret := allData{
+	ret := AllData{
 		OntDescriptors: sont.New(),
 		RuleSets:       srule.New(),
 		Documents:      sdoc.New(),
@@ -82,14 +81,14 @@ func readOnt(
 
 	go func() {
 		defer close(ret)
-		ch := ingest.FindFilesAsync(c.RefDirs, c.OntologyFiles, ctx)
+		ch := FindFilesAsync(c.RefDirs, c.OntologyFiles, ctx)
 		for {
 			select {
 			case f, ok := <-ch:
 				if !ok {
 					return
 				}
-				ont, err := ingest.ReadOntologyFile(f)
+				ont, err := ReadOntologyFile(f)
 				if err != nil {
 					probs.Error(f, err)
 				}
@@ -114,14 +113,14 @@ func readRule(
 
 	go func() {
 		defer close(ret)
-		ch := ingest.FindFilesAsync(c.RefDirs, c.RuleFiles, ctx)
+		ch := FindFilesAsync(c.RefDirs, c.RuleFiles, ctx)
 		for {
 			select {
 			case f, ok := <-ch:
 				if !ok {
 					return
 				}
-				rule, err := ingest.ReadRuleFile(f)
+				rule, err := ReadRuleFile(f)
 				if err != nil {
 					probs.Error(f, err)
 				}
@@ -151,7 +150,7 @@ func readDocument(
 			if ctx.Err() != nil {
 				return
 			}
-			doc, err := ingest.ReadDocumentsFile(f)
+			doc, err := ReadDocumentsFile(f)
 			if err != nil {
 				probs.Error(f, err)
 			}
