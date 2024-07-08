@@ -13,6 +13,7 @@ import (
 )
 
 func ValidateDescriptor(
+	context string,
 	d *descriptor.Descriptor,
 	ont *sont.AllowedDescriptors,
 	src []sources.Source,
@@ -21,28 +22,24 @@ func ValidateDescriptor(
 	if d == nil || ont == nil {
 		return
 	}
-	typed := ont.Find(d.Key)
+	typed := checkKey(context, d.Key, ont, src, probs)
 	if typed == nil {
-		probs.AddError(
-			src,
-			"undefined descriptor key (%s)",
-			d.Key,
-		)
 		return
 	}
 	// These validations also include the source for the offending ontology.
 	if typed.Enum != nil {
-		ValidateEnum(d, typed.Enum, sources.Join(src, typed.Enum.Sources...), probs)
+		ValidateEnum(context, d, typed.Enum, sources.Join(src, typed.Enum.Sources...), probs)
 	}
 	if typed.Free != nil {
-		ValidateFree(d, typed.Free, sources.Join(src, typed.Free.Sources...), probs)
+		ValidateFree(context, d, typed.Free, sources.Join(src, typed.Free.Sources...), probs)
 	}
 	if typed.Numeric != nil {
-		ValidateNumeric(d, typed.Numeric, sources.Join(src, typed.Numeric.Sources...), probs)
+		ValidateNumeric(context, d, typed.Numeric, sources.Join(src, typed.Numeric.Sources...), probs)
 	}
 }
 
 func ValidateEnum(
+	context string,
 	d *descriptor.Descriptor,
 	ont *sont.EnumDesc,
 	src []sources.Source,
@@ -54,27 +51,30 @@ func ValidateEnum(
 	if len(d.Number) != 0 {
 		probs.AddError(
 			src,
-			"%s: enum descriptor cannot have numeric values",
+			"%s: enum %s cannot have numeric values",
 			d.Key,
+			context,
 		)
 	}
-	checkCount(d.Key, d.Text, ont.MaximumCount, src, probs)
+	checkCount(context, d.Key, d.Text, ont.MaximumCount, src, probs)
 	for _, t := range d.Text {
 		if _, ok := ont.Enum[t]; !ok {
 			probs.AddError(
 				src,
-				"%s: enum descriptor invalid value (%s)",
+				"%s: enum %s invalid value (%s)",
 				d.Key,
+				context,
 				t,
 			)
 		}
 	}
 	if ont.Distinct {
-		findDuplicates(d.Key, d.Text, src, probs)
+		findDuplicates(context, d.Key, d.Text, src, probs)
 	}
 }
 
 func ValidateFree(
+	context string,
 	d *descriptor.Descriptor,
 	ont *sont.FreeDesc,
 	src []sources.Source,
@@ -86,17 +86,19 @@ func ValidateFree(
 	if len(d.Number) != 0 {
 		probs.AddError(
 			src,
-			"%s: free descriptor cannot have numeric values",
+			"%s: free %s cannot have numeric values",
 			d.Key,
+			context,
 		)
 	}
-	checkCount(d.Key, d.Text, ont.MaximumCount, src, probs)
+	checkCount(context, d.Key, d.Text, ont.MaximumCount, src, probs)
 	for _, t := range d.Text {
 		if len(t) > ont.MaximumLength {
 			probs.AddError(
 				src,
-				"%s: free descriptor value length (%d) exceeds maximum (%d) (%s)",
+				"%s: free %s value length (%d) exceeds maximum (%d) (%s)",
 				d.Key,
+				context,
 				len(t),
 				ont.MaximumLength,
 				t,
@@ -113,11 +115,12 @@ func ValidateFree(
 		}
 	}
 	if ont.Distinct {
-		findDuplicates(d.Key, d.Text, src, probs)
+		findDuplicates(context, d.Key, d.Text, src, probs)
 	}
 }
 
 func ValidateNumeric(
+	context string,
 	d *descriptor.Descriptor,
 	ont *sont.NumericDesc,
 	src []sources.Source,
@@ -126,10 +129,51 @@ func ValidateNumeric(
 	if d == nil || ont == nil {
 		return
 	}
-	panic("not implemented")
+	if len(d.Text) != 0 {
+		probs.AddError(
+			src,
+			"%s: numeric %s cannot have text values",
+			d.Key,
+			context,
+		)
+	}
+	checkCount(context, d.Key, d.Number, ont.MaximumCount, src, probs)
+	for _, n := range d.Number {
+		if n < ont.Minimum || n > ont.Maximum {
+			probs.AddError(
+				src,
+				"%s: numeric %s value (%f) outside bounds [%f, %f]",
+				n,
+				context,
+				ont.Minimum,
+				ont.Maximum,
+			)
+		}
+	}
+}
+
+func checkKey(
+	owningType string,
+	key string,
+	ont *sont.AllowedDescriptors,
+	src []sources.Source,
+	probs problem.Adder,
+) *sont.TypedDescriptor {
+	typed := ont.Find(key)
+	if typed == nil {
+		probs.AddError(
+			src,
+			"undefined %s key (%s)",
+			owningType,
+			key,
+		)
+		return nil
+	}
+	return typed
 }
 
 func findDuplicates(
+	context string,
 	key string,
 	values []string,
 	src []sources.Source,
@@ -141,8 +185,9 @@ func findDuplicates(
 			if !reported {
 				probs.AddError(
 					src,
-					"%s: descriptor does not allow duplicate values (%s)",
+					"%s: %s does not allow duplicate values (%s)",
 					key,
+					context,
 					v,
 				)
 				discovered[v] = true
@@ -154,6 +199,7 @@ func findDuplicates(
 }
 
 func checkCount[T string | float64](
+	context string,
 	key string,
 	values []T,
 	maxCount int,
@@ -163,8 +209,9 @@ func checkCount[T string | float64](
 	if len(values) > maxCount {
 		probs.AddError(
 			src,
-			"%s: descriptor can have a maximum of %d values (found %d)",
+			"%s: %s can have a maximum of %d values (found %d)",
 			key,
+			context,
 			maxCount,
 			len(values),
 		)
@@ -212,7 +259,7 @@ func checkConstraint(
 				"%s: value (%s) does not match constraint pattern (%s)",
 				key,
 				val,
-				con.Pattern,
+				*con.Pattern,
 			)
 		}
 	}

@@ -3,8 +3,10 @@ package okstruct_test
 
 import (
 	"embed"
+	"errors"
 	"os"
 	"path"
+	"testing"
 
 	"github.com/groboclown/qazaar-testing/rule-engine/config"
 )
@@ -42,4 +44,21 @@ func newConfig(outdir string) *config.ProjectConfig {
 		RuleFiles:     []string{"*.rule.json"},
 		OntologyFiles: []string{"*.ont.json"},
 	}
+}
+
+// docFilename finds the document file with the name + extension '.doc.json'.
+func docFilename(outdir, name string) (string, error) {
+	ret := path.Join(outdir, name+".doc.json")
+	if _, err := os.Stat(ret); errors.Is(err, os.ErrNotExist) {
+		return "", err
+	}
+	return ret, nil
+}
+
+func mustDocFilename(outdir, name string, t *testing.T) string {
+	ret, err := docFilename(outdir, name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return ret
 }

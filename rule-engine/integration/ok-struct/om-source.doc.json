@@ -1,0 +1,50 @@
+{
+    "$schema": "https://raw.githubusercontent.com/groboclown/qazaar-testing/main/data-exchange/schema/document-description.v1.schema.json",
+    "$comments": [
+        "Simulates coming from an object-mapping source file.",
+        "It contained a source file with an object that represents a SQL schema."
+    ],
+    "commonSourceRefs": [
+        {"id": "my/repo:om/User.java:1", "rep": "my/repo", "loc": "om/User.java", "ver": "1" }
+    ],
+    "objects": [
+        {
+            "sources": [{"ref": "my/repo:om/User.java:1", "a": "lines:50-268"}],
+            "id": "class:om.User",
+            "descriptors": [
+                {"key": "data-type", "values": ["structure"]},
+                {"key": "structure", "values": ["User"]}
+            ]
+        },
+        {
+            "sources": [{"ref": "my/repo:om/User.java:1", "a": "line:76"}],
+            "id": "field:om.User:Name",
+            "descriptors": [
+                {"key": "data-type", "values": ["field"]},
+                {"key": "field-name", "values": ["name"]},
+                {"key": "field-type", "values": ["string"]},
+                {"key": "field-size", "values": ["200"]}
+            ]
+        },
+        {
+            "sources": [{"ref": "my/repo:om/User.java:1", "a": "line:84"}],
+            "id": "field:om.User:Role",
+            "descriptors": [
+                {"key": "data-type", "values": ["field"]},
+                {"key": "field-name", "values": ["role"]},
+                {"key": "field-type", "values": ["string"]},
+                {"key": "field-size", "values": ["30"]}
+            ]
+        },
+        {
+            "sources": [{"ref": "my/repo:om/User.java:1", "a": "line:99"}],
+            "id": "field:om.User:LastLogin",
+            "descriptors": [
+                {"key": "data-type", "values": ["field"]},
+                {"key": "field-name", "values": ["lastlogin"]},
+                {"key": "field-type", "values": ["date-time"]},
+                {"key": "field-size", "values": []}
+            ]
+        }
+    ]
+}

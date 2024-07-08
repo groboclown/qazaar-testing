@@ -1,0 +1,60 @@
+{
+    "$schema": "https://raw.githubusercontent.com/groboclown/qazaar-testing/main/data-exchange/schema/document-description.v1.schema.json",
+    "$comments": [
+        "Simulates coming from a SQL data definition file."
+    ],
+    "commonSourceRefs": [
+        {"id": "my/repo:sql/user.sql:2", "rep": "my/repo", "loc": "sql/user.sql", "ver": "2" }
+    ],
+    "objects": [
+        {
+            "sources": [{"ref": "my/repo:sql/user.sql:2", "a": "lines:10-19"}],
+            "id": "table:user",
+            "descriptors": [
+                {"key": "data-type", "values": ["structure"]},
+                {"key": "structure", "values": ["USER"]}
+            ]
+        },
+        {
+            "sources": [{"ref": "my/repo:sql/user.sql:2", "a": "line:11"}],
+            "id": "field:user:name",
+            "descriptors": [
+                {"key": "data-type", "values": ["field"]},
+                {"key": "field-name", "values": ["NAME"]},
+                {"key": "field-type", "values": ["string"]},
+                {"key": "field-size", "values": ["200"]}
+            ]
+        },
+        {
+            "sources": [{"ref": "my/repo:sql/user.sql:2", "a": "line:12"}],
+            "id": "field:user:role",
+            "descriptors": [
+                {"key": "data-type", "values": ["field"]},
+                {"key": "field-name", "values": ["ROLE"]},
+                {"key": "field-type", "values": ["string"]},
+                {"key": "field-size", "values": ["30"]}
+            ]
+        },
+        {
+            "sources": [{"ref": "my/repo:sql/user.sql:2", "a": "line:13"}],
+            "id": "field:user:lastlogin",
+            "descriptors": [
+                {"key": "data-type", "values": ["field"]},
+                {"key": "field-name", "values": ["LASTLOGIN"]},
+                {"key": "field-type", "values": ["date-time"]},
+                {"key": "field-size", "values": []}
+            ]
+        },
+        {
+            "sources": [{"ref": "my/repo:sql/user.sql:2", "a": "line:13"}],
+            "id": "field:user:lastupdate",
+            "descriptors": [
+                {"key": "data-type", "values": ["field"]},
+                {"key": "field-name", "values": ["LASTUPDATE"]},
+                {"key": "field-type", "values": ["date-time"]},
+                {"key": "field-size", "values": []},
+                {"key": "visibility", "values": ["private"]}
+            ]
+        }
+    ]
+}

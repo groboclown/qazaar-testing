@@ -48,6 +48,8 @@ type Convergence struct {
 	Level    string
 	Distinct bool
 	Requires ConvergenceType
+	Comments []string
+	Sources  []sources.Source
 }
 
 type AlterationAction int
@@ -65,11 +67,15 @@ type Alteration struct {
 	Action       AlterationAction
 	TextValues   []string
 	NumberValues []float64
+	Comments     []string
+	Sources      []sources.Source
 }
 
 type LeveledMatcher struct {
 	Level    string
 	Matchers *MatchingDescriptorSet
+	Comments []string
+	Sources  []sources.Source
 }
 
 type MatchingDescriptorSet struct {
@@ -108,7 +114,8 @@ type ContainsMatcher struct {
 }
 
 type ValueCheckSet struct {
-	String  []StringCheck
+	// Text checks should include both the original + regexp, for error reporting.
+	Text    []StringCheck
 	Numeric []NumericBoundsCheck
 }
 

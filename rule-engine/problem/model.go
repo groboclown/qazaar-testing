@@ -30,8 +30,9 @@ func New() *ProblemSet {
 
 type Adder interface {
 	Complete()
+	Recover(source string, recover any)
 	Error(source string, err ...error)
-	Add(p Problem)
+	Add(p ...Problem)
 	AddError(
 		sources []sources.Source,
 		format string,

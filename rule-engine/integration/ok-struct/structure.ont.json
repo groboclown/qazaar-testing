@@ -13,6 +13,7 @@
         {
             "key": "structure",
             "type": "free",
+            "caseSensitive": false,
             "maximumCount": 1,
             "maximumLength": 200
         },
@@ -20,6 +21,7 @@
             "$comment": "> 1 field-name allowed for the SOG of the structures.  A separate rule for structure fields requires this to be 1.",
             "key": "field-name",
             "type": "free",
+            "caseSensitive": false,
             "maximumCount": 100,
             "maximumLength": 200
         },
@@ -30,7 +32,8 @@
                 "string",
                 "int",
                 "float",
-                "boolean"
+                "boolean",
+                "date-time"
             ],
             "maximumCount": 1
         },
@@ -38,17 +41,19 @@
             "key": "field-size",
             "type": "free",
             "maximumCount": 1,
+            "maximumLength": 1000,
             "constraints": [
                 {
                     "type": "pattern",
-                    "pattern": "^0-9+(,0-9+)?$"
+                    "pattern": "^[0-9]+(,[0-9]+)?$"
                 }
             ]
         },
         {
             "key": "visibility",
             "type": "enum",
-            "enum": ["private", "public"]
+            "enum": ["private", "public"],
+            "maximumCount": 1
         },
         {
             "key": "sog-type",

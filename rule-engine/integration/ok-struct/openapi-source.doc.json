@@ -1,0 +1,49 @@
+{
+    "$schema": "https://raw.githubusercontent.com/groboclown/qazaar-testing/main/data-exchange/schema/document-description.v1.schema.json",
+    "$comments": [
+        "Simulates coming from an OpenAPI/Swagger file."
+    ],
+    "commonSourceRefs": [
+        {"id": "my/repo:restapi.json:1", "rep": "my/repo", "loc": "restapi.json", "ver": "1" }
+    ],
+    "objects": [
+        {
+            "sources": [{"ref": "my/repo:restapi.json:1", "a": "lines:1-1"}],
+            "id": "api:/user:GET",
+            "descriptors": [
+                {"key": "data-type", "values": ["structure"]},
+                {"key": "structure", "values": ["user"]}
+            ]
+        },
+        {
+            "sources": [{"ref": "my/repo:restapi.json:1", "a": "line:76"}],
+            "id": "api:/user:GET:field:name",
+            "descriptors": [
+                {"key": "data-type", "values": ["field"]},
+                {"key": "field-name", "values": ["name"]},
+                {"key": "field-type", "values": ["string"]},
+                {"key": "field-size", "values": ["200"]}
+            ]
+        },
+        {
+            "sources": [{"ref": "my/repo:restapi.json:1", "a": "line:84"}],
+            "id": "api:/user:GET:field:role",
+            "descriptors": [
+                {"key": "data-type", "values": ["field"]},
+                {"key": "field-name", "values": ["role"]},
+                {"key": "field-type", "values": ["string"]},
+                {"key": "field-size", "values": ["30"]}
+            ]
+        },
+        {
+            "sources": [{"ref": "my/repo:restapi.json:1", "a": "line:99"}],
+            "id": "api:/user:GET:field:lastlogin",
+            "descriptors": [
+                {"key": "data-type", "values": ["field"]},
+                {"key": "field-name", "values": ["lastlogin"]},
+                {"key": "field-type", "values": ["date-time"]},
+                {"key": "field-size", "values": []}
+            ]
+        }
+    ]
+}

@@ -35,6 +35,14 @@
                     "action": "set",
                     "values": ["structure-field"]
                 }
+            ],
+            "convergences": [
+                {
+                    "$comment": "Each member of the SOG must have the same set of field-size as all the others.",
+                    "level": "error",
+                    "key": "field-size",
+                    "requires": "allMatch"
+                }
             ]
         },
         {

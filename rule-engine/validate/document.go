@@ -10,22 +10,6 @@ import (
 	"github.com/groboclown/qazaar-testing/rule-engine/problem"
 )
 
-func ValidateDocuments(doc *sdoc.Documents, ont *sont.AllowedDescriptors, probs problem.Adder) {
-	if doc != nil {
-		for _, d := range doc.Objects {
-			ValidateDocument(d, ont, probs)
-		}
-	}
-}
-
-func ValidateDocument(doc *sdoc.DocumentObject, ont *sont.AllowedDescriptors, probs problem.Adder) {
-	if doc != nil {
-		for _, d := range doc.Descriptors {
-			ValidateDescriptor(d, ont, doc.Sources, probs)
-		}
-	}
-}
-
 // ValidateDocumentsAsync validates all the documents, and returns a channel that reads once (and then closes) when they complete.
 func ValidateDocumentsAsync(
 	doc *sdoc.Documents,
@@ -37,7 +21,7 @@ func ValidateDocumentsAsync(
 
 	go func() {
 		defer func() {
-			ret <- true
+			ret <- onDefer("documents", nil, probs)
 			close(ret)
 		}()
 
@@ -55,7 +39,8 @@ func ValidateDocumentsAsync(
 						}
 						wg.Add(1)
 						go func() {
-							ValidateDescriptor(desc, ont, d.Sources, probs)
+							defer onDefer("document descriptor", &wg, probs)
+							ValidateDescriptor("descriptor", desc, ont, d.Sources, probs)
 						}()
 					}
 				}

@@ -11,11 +11,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-func joinMatchers[
-	T rules.RuleMatchingDescriptorsElem |
-		rules.GroupMatchingDescriptorsElem |
-		rules.NotMatcherMatcher |
-		any](
+func joinMatchers[T rules.MatchingDescriptor | rules.NotMatcherMatcher](
 	matchers []T,
 	src *sources.RulesSource,
 	probs *problem.ProblemSet,
@@ -31,9 +27,9 @@ func joinMatchers[
 }
 
 func addMatcher[
-	T rules.RuleMatchingDescriptorsElem |
-		rules.GroupMatchingDescriptorsElem |
-		rules.ConformityImplicationMatcher | any](
+	T rules.MatchingDescriptor |
+		rules.NotMatcherMatcher |
+		rules.ConformityImplicationMatcher](
 	m *MatchingDescriptorSet,
 	obj *T,
 	src *sources.RulesSource,
@@ -125,7 +121,7 @@ func newContainsMatcher(
 	probs *problem.ProblemSet,
 ) error {
 	var match rules.ContainsMatcher
-	err := mapstructure.Decode(val, match)
+	err := mapstructure.Decode(val, &match)
 	if err != nil {
 		return err
 	}
@@ -144,7 +140,7 @@ func joinChecks(
 	probs *problem.ProblemSet,
 ) ValueCheckSet {
 	ret := &ValueCheckSet{
-		String:  make([]StringCheck, 0),
+		Text:    make([]StringCheck, 0),
 		Numeric: make([]NumericBoundsCheck, 0),
 	}
 	for _, c := range checks {
@@ -155,6 +151,9 @@ func joinChecks(
 				},
 				string(rules.StringCheckTypePattern): func(val map[string]any) error {
 					return addStringCheck(val, true, ret)
+				},
+				string(rules.NumericBoundsCheckTypeWithin): func(val map[string]any) error {
+					return addWithinCheck(val, ret)
 				},
 			},
 		)
@@ -186,6 +185,20 @@ func addStringCheck(val map[string]any, asRe bool, checks *ValueCheckSet) error 
 		return err
 	}
 
-	checks.String = append(checks.String, re)
+	checks.Text = append(checks.Text, re)
+	return nil
+}
+
+func addWithinCheck(val map[string]any, checks *ValueCheckSet) error {
+	var check rules.NumericBoundsCheck
+	if err := mapstructure.Decode(val, &check); err != nil {
+		return err
+	}
+
+	checks.Numeric = append(checks.Numeric, NumericBoundsCheck{
+		Min: float64(check.Minimum),
+		Max: float64(check.Maximum),
+	})
+
 	return nil
 }

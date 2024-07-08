@@ -67,6 +67,8 @@ func joinAlterations(
 			Action:       toAlterationAction(a.Action, s, probs),
 			TextValues:   texts,
 			NumberValues: numbers,
+			Comments:     comments.JoinRuleComments(a.Comment, a.Comments),
+			Sources:      s,
 		})
 	}
 	return ret

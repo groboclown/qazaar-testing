@@ -77,11 +77,23 @@ func (pg *asyncProblemGenerator) Error(source string, err ...error) {
 	}
 }
 
-func (pg *asyncProblemGenerator) Add(p Problem) {
+func (pg *asyncProblemGenerator) Recover(source string, recover any) {
+	if recover != nil {
+		pg.Add(Problem{
+			Sources: nil,
+			Level:   Err,
+			Message: fmt.Sprintf("%s: runtime error (%v)", source, recover),
+		})
+	}
+}
+
+func (pg *asyncProblemGenerator) Add(p ...Problem) {
 	if pg == nil {
 		return
 	}
-	pg.out <- &p
+	for _, v := range p {
+		pg.out <- &v
+	}
 }
 
 func (pg *asyncProblemGenerator) AddError(

@@ -41,8 +41,9 @@ func main() {
 	data := ingest.ReadAll(pc, flag.Args(), probGen, ctx)
 
 	// Validate
-	validate.ValidateDocuments(data.Documents, data.OntDescriptors, probGen)
+	validate.ValidateAllDataAsync(data, probGen, ctx)
 
+	probGen.Complete()
 	probs := probRead.Read(ctx)
 	ReportProblems(probs, os.Stdout)
 }

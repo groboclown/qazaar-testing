@@ -7,8 +7,6 @@ This reference implementation allows people who work on the schema definition to
 
 ## TODO Items
 
-* Finish ontology checked value validations for documents.
-* Write the ontology consistency checks for rules.
 * Create the rule engine itself.
 * Test.
 * Add an example set of files.

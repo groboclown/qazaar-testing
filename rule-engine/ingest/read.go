@@ -162,3 +162,16 @@ func readDocument(
 
 	return ret
 }
+
+// Problems joins all problem sets of the loaded files.
+func (a *AllData) Problems() *problem.ProblemSet {
+	ret := problem.New()
+
+	if a != nil {
+		ret.Add(a.OntDescriptors.Problems.Problems()...)
+		ret.Add(a.RuleSets.Problems.Problems()...)
+		ret.Add(a.Documents.Problems.Problems()...)
+	}
+
+	return ret
+}

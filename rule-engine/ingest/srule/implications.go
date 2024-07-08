@@ -2,6 +2,7 @@
 package srule
 
 import (
+	"github.com/groboclown/qazaar-testing/rule-engine/ingest/shared/comments"
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest/shared/sources"
 	"github.com/groboclown/qazaar-testing/rule-engine/problem"
 	"github.com/groboclown/qazaar-testing/rule-engine/schema/rules"
@@ -22,6 +23,8 @@ func joinConformities(
 					Collection: make([]CollectionMatcher, 0),
 					Contains:   make([]ContainsMatcher, 0),
 				},
+				Comments: comments.JoinRuleComments(c.Comment, c.Comments),
+				Sources:  src.DocumentSources(c.Sources),
 			}
 			byLevel[c.Level] = m
 		}
@@ -46,7 +49,7 @@ func addConformity(
 	if m == nil || conf == nil {
 		return
 	}
-	addMatcher(m.Matchers, conf, src, probs)
+	addMatcher(m.Matchers, &conf.Matcher, src, probs)
 }
 
 func joinConvergences(
@@ -62,6 +65,8 @@ func joinConvergences(
 			Level:    string(c.Level),
 			Distinct: c.Distinct,
 			Requires: toConvergenceType(c.Requires, s, probs),
+			Comments: comments.JoinRuleComments(c.Comment, c.Comments),
+			Sources:  s,
 		})
 	}
 	return ret

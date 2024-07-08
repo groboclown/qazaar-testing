@@ -12,12 +12,12 @@ func (s *ProblemSet) Done() {
 }
 
 // Add adds a problem to the set.
-func (s *ProblemSet) Add(p Problem) {
-	if s == nil {
+func (s *ProblemSet) Add(p ...Problem) {
+	if s == nil || p == nil {
 		return
 	}
 	// TODO could enforce a uniqueness here.
-	s.p = append(s.p, p)
+	s.p = append(s.p, p...)
 }
 
 // Merges another problem set into this one.
@@ -65,4 +65,26 @@ func (ps *ProblemSet) AddProblem(
 		Message: fmt.Sprintf(format, args...),
 		Sources: sources,
 	})
+}
+
+func (ps *ProblemSet) Error(source string, err ...error) {
+	for _, e := range err {
+		if e != nil {
+			ps.Add(Problem{
+				Sources: nil,
+				Level:   Err,
+				Message: fmt.Sprintf("%s: %s", source, e.Error()),
+			})
+		}
+	}
+}
+
+func (ps *ProblemSet) Recover(source string, recover any) {
+	if recover != nil {
+		ps.Add(Problem{
+			Sources: nil,
+			Level:   Err,
+			Message: fmt.Sprintf("%s: runtime error (%v)", source, recover),
+		})
+	}
 }
