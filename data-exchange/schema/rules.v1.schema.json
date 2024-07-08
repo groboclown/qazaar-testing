@@ -13,6 +13,7 @@
     "$schema": {"$ref": "#/$defs/Schema"},
     "commonSourceRefs": {"$ref": "#/$defs/CommonDocumentSourceList"},
     "sources": {"$ref": "#/$defs/DocumentSources"},
+    
     "groups": {
       "title": "Self-Organizing Group List",
       "description": "List of self-organizing group definitions.  If necessary, additional groups may live in accompanying document files.",
@@ -43,22 +44,8 @@
         "sources": {"$ref": "#/$defs/DocumentSources"},
 
         "id": {"$ref": "#/$defs/Id"},
-        "variables": {
-          "title": "Simple Replacement Variable List",
-          "description": "List of simple variables which an external system may define for replacement within the values.",
-          "type": "array",
-          "minLength": 0,
-          "maxLength": 10000,
-          "items": {"$ref": "#/$defs/Variable"}
-        },
-        "matchingDescriptors": {
-          "title": "Matching Descriptor List",
-          "description": "List of descriptor rules that, when all match, mark items for group creation.",
-          "type": "array",
-          "minLength": 0,
-          "maxLength": 1000,
-          "items": {"$ref": "#/$defs/MatchingDescriptor"}
-        },
+        "variables": {"$ref": "#/$defs/VariableList"},
+        "matchingDescriptors": {"$ref": "#/$defs/MatcherCollection"},
         "sharedValues": {
           "title": "Shared Value List",
           "description": "List of descriptor keys whose matching values constructs a single SOG.",
@@ -98,22 +85,8 @@
         "sources": {"$ref": "#/$defs/DocumentSources"},
 
         "id": {"$ref": "#/$defs/Id"},
-        "variables": {
-          "title": "Simple Replacement Variable List",
-          "description": "List of simple variables which an external system may define for replacement within the values.",
-          "type": "array",
-          "minLength": 0,
-          "maxLength": 10000,
-          "items": {"$ref": "#/$defs/Variable"}
-        },
-        "matchingDescriptors": {
-          "title": "Matching Descriptor List",
-          "description": "List of descriptor rules that, when all match, mark items as affected by the rule.",
-          "type": "array",
-          "minLength": 0,
-          "maxLength": 1000,
-          "items": {"$ref": "#/$defs/MatchingDescriptor"}
-        },
+        "variables": {"$ref": "#/$defs/VariableList"},
+        "matchingDescriptors": {"$ref": "#/$defs/MatcherCollection"},
         "conformities": {
           "title": "Conformity Implication List",
           "description": "List of conformity implications.",
@@ -123,6 +96,15 @@
           "items": {"$ref": "#/$defs/ConformityImplication"}
         }
       }
+    },
+
+    "VariableList": {
+      "title": "Simple Replacement Variable List",
+      "description": "List of simple variables which an external system may define for replacement within the values.",
+      "type": "array",
+      "minLength": 0,
+      "maxLength": 10000,
+      "items": {"$ref": "#/$defs/Variable"}
     },
 
     "Variable": {
@@ -234,6 +216,10 @@
       "required": ["level", "matcher"],
       "additionalProperties": false,
       "properties": {
+        "$comment": {"$ref": "#/$defs/Comment"},
+        "$comments": {"$ref": "#/$defs/CommentList"},
+        "sources": {"$ref": "#/$defs/DocumentSources"},
+
         "level": {"$ref": "#/$defs/ImplicationLevel"},
         "matcher": {"$ref": "#/$defs/MatchingDescriptor"}
       }
@@ -302,7 +288,7 @@
       "title": "Contains Matcher",
       "description": "containsSome: Ensures the descriptor's values contain at least one of the values in this matcher.  containsAll: Ensures the descriptor's values contain all of this matcher's values; could contain more.  containsExactly: Ensures the descriptor's values contain all of this matcher's values and no more.  containsOnly: Ensures the descriptor's values are restricted to the matcher's values; cannot contain other values.",
       "type": "object",
-      "required": ["type", "key", "matcher"],
+      "required": ["type", "key", "values"],
       "additionalProperties": false,
       "properties": {
         "$comment": {"$ref": "#/$defs/Comment"},
@@ -339,7 +325,7 @@
     },
     "MatcherCollection": {
       "title": "Matcher Collection",
-      "description": "A collection of one or more sub-matchers.",
+      "description": "A collection of one or more matchers.",
       "type": "array",
       "minLength": 1,
       "maxLength": 1000,

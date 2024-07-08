@@ -19,14 +19,14 @@
                 },
                 {
                     "type": "not",
-                    "matcher": [{
+                    "matcher": {
                         "key": "visibility",
                         "type": "containsSome",
                         "values": [{
                             "type": "equal",
                             "text": "private"
                         }]
-                    }]
+                    }
                 }
             ],
             "alterations": [

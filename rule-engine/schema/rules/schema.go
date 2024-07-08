@@ -249,11 +249,20 @@ func (j *CommonDocumentSource) UnmarshalJSON(b []byte) error {
 
 // A descriptor requirement for the item matching a rule.
 type ConformityImplication struct {
+	// Comment corresponds to the JSON schema field "$comment".
+	Comment *Comment `json:"$comment,omitempty" yaml:"$comment,omitempty" mapstructure:"$comment,omitempty"`
+
+	// Comments corresponds to the JSON schema field "$comments".
+	Comments CommentList `json:"$comments,omitempty" yaml:"$comments,omitempty" mapstructure:"$comments,omitempty"`
+
 	// Level corresponds to the JSON schema field "level".
 	Level ImplicationLevel `json:"level" yaml:"level" mapstructure:"level"`
 
 	// Matcher corresponds to the JSON schema field "matcher".
 	Matcher ConformityImplicationMatcher `json:"matcher" yaml:"matcher" mapstructure:"matcher"`
+
+	// Sources corresponds to the JSON schema field "sources".
+	Sources DocumentSources `json:"sources,omitempty" yaml:"sources,omitempty" mapstructure:"sources,omitempty"`
 }
 
 type ConformityImplicationMatcher interface{}
@@ -308,7 +317,7 @@ type ContainsMatcher struct {
 	Type ContainsMatcherType `json:"type" yaml:"type" mapstructure:"type"`
 
 	// Values corresponds to the JSON schema field "values".
-	Values ValueCheckList `json:"values,omitempty" yaml:"values,omitempty" mapstructure:"values,omitempty"`
+	Values ValueCheckList `json:"values" yaml:"values" mapstructure:"values"`
 }
 
 type ContainsMatcherType string
@@ -356,6 +365,9 @@ func (j *ContainsMatcher) UnmarshalJSON(b []byte) error {
 	}
 	if _, ok := raw["type"]; raw != nil && !ok {
 		return fmt.Errorf("field type in ContainsMatcher: required")
+	}
+	if _, ok := raw["values"]; raw != nil && !ok {
+		return fmt.Errorf("field values in ContainsMatcher: required")
 	}
 	type Plain ContainsMatcher
 	var plain Plain
@@ -488,8 +500,8 @@ type Group struct {
 	// Id corresponds to the JSON schema field "id".
 	Id Id `json:"id" yaml:"id" mapstructure:"id"`
 
-	// List of descriptor rules that, when all match, mark items for group creation.
-	MatchingDescriptors []GroupMatchingDescriptorsElem `json:"matchingDescriptors,omitempty" yaml:"matchingDescriptors,omitempty" mapstructure:"matchingDescriptors,omitempty"`
+	// MatchingDescriptors corresponds to the JSON schema field "matchingDescriptors".
+	MatchingDescriptors MatcherCollection `json:"matchingDescriptors,omitempty" yaml:"matchingDescriptors,omitempty" mapstructure:"matchingDescriptors,omitempty"`
 
 	// List of descriptor keys whose matching values constructs a single SOG.
 	SharedValues []DescriptorKey `json:"sharedValues" yaml:"sharedValues" mapstructure:"sharedValues"`
@@ -497,12 +509,9 @@ type Group struct {
 	// Sources corresponds to the JSON schema field "sources".
 	Sources DocumentSources `json:"sources,omitempty" yaml:"sources,omitempty" mapstructure:"sources,omitempty"`
 
-	// List of simple variables which an external system may define for replacement
-	// within the values.
-	Variables []Variable `json:"variables,omitempty" yaml:"variables,omitempty" mapstructure:"variables,omitempty"`
+	// Variables corresponds to the JSON schema field "variables".
+	Variables VariableList `json:"variables,omitempty" yaml:"variables,omitempty" mapstructure:"variables,omitempty"`
 }
-
-type GroupMatchingDescriptorsElem interface{}
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (j *Group) UnmarshalJSON(b []byte) error {
@@ -534,7 +543,7 @@ type Id string
 // implication.
 type ImplicationLevel string
 
-// A collection of one or more sub-matchers.
+// A collection of one or more matchers.
 type MatcherCollection []interface{}
 
 type MatchingDescriptor interface{}
@@ -696,19 +705,15 @@ type Rule struct {
 	// Id corresponds to the JSON schema field "id".
 	Id Id `json:"id" yaml:"id" mapstructure:"id"`
 
-	// List of descriptor rules that, when all match, mark items as affected by the
-	// rule.
-	MatchingDescriptors []RuleMatchingDescriptorsElem `json:"matchingDescriptors" yaml:"matchingDescriptors" mapstructure:"matchingDescriptors"`
+	// MatchingDescriptors corresponds to the JSON schema field "matchingDescriptors".
+	MatchingDescriptors MatcherCollection `json:"matchingDescriptors" yaml:"matchingDescriptors" mapstructure:"matchingDescriptors"`
 
 	// Sources corresponds to the JSON schema field "sources".
 	Sources DocumentSources `json:"sources,omitempty" yaml:"sources,omitempty" mapstructure:"sources,omitempty"`
 
-	// List of simple variables which an external system may define for replacement
-	// within the values.
-	Variables []Variable `json:"variables,omitempty" yaml:"variables,omitempty" mapstructure:"variables,omitempty"`
+	// Variables corresponds to the JSON schema field "variables".
+	Variables VariableList `json:"variables,omitempty" yaml:"variables,omitempty" mapstructure:"variables,omitempty"`
 }
-
-type RuleMatchingDescriptorsElem interface{}
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (j *Rule) UnmarshalJSON(b []byte) error {
@@ -923,6 +928,10 @@ type Variable struct {
 	// 'integer'.
 	Type string `json:"type" yaml:"type" mapstructure:"type"`
 }
+
+// List of simple variables which an external system may define for replacement
+// within the values.
+type VariableList []Variable
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (j *Variable) UnmarshalJSON(b []byte) error {
