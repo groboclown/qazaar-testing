@@ -1,3 +1,4 @@
+// Under the Apache-2.0 License
 package descriptor
 
 import "github.com/groboclown/qazaar-testing/rule-engine/schema/document"
@@ -10,6 +11,7 @@ func DecodeDocumentValues(vals []document.DocumentDescriptorValuesElem) []Descri
 	return ret
 }
 
+// JoinDocumentDescriptors converts the document descriptors into the shared descriptor format.
 func JoinDocumentDescriptors(descs []document.DocumentDescriptor) []*Descriptor {
 	ret := make([]*Descriptor, len(descs))
 	for i, d := range descs {

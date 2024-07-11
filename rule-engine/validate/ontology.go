@@ -29,21 +29,21 @@ func ValidateOntologyAsync(
 
 		var wg sync.WaitGroup
 
-		for _, d := range ont.Enum {
+		for _, d := range ont.Enums() {
 			wg.Add(1)
 			go func() {
 				defer onDefer("ontology enum", &wg, probs)
 				ValidateOntEnum(d, probs)
 			}()
 		}
-		for _, d := range ont.Free {
+		for _, d := range ont.Frees() {
 			wg.Add(1)
 			go func() {
 				defer onDefer("ontology free", &wg, probs)
 				ValidateOntFree(d, probs)
 			}()
 		}
-		for _, d := range ont.Numeric {
+		for _, d := range ont.Numerics() {
 			wg.Add(1)
 			go func() {
 				defer onDefer("ontology numeric", &wg, probs)
@@ -76,6 +76,14 @@ func ValidateOntNumeric(d *sont.NumericDesc, probs problem.Adder) {
 			d.Key,
 			d.Minimum,
 			d.Maximum,
+		)
+	}
+	if d.Distinct {
+		// Need to research if this is really the case.
+		probs.AddInfo(
+			d.Sources,
+			"%s: numeric descriptor defined as distinct; be careful with this - for non-integral values, this can lead to unexpected behavior.",
+			d.Key,
 		)
 	}
 }

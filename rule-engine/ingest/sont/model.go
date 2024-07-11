@@ -8,10 +8,10 @@ import (
 )
 
 type AllowedDescriptors struct {
-	Enum     map[string]*EnumDesc
-	Free     map[string]*FreeDesc
-	Numeric  map[string]*NumericDesc
 	Problems *problem.ProblemSet
+	enums    map[string]*EnumDesc
+	frees    map[string]*FreeDesc
+	numerics map[string]*NumericDesc
 	keyTypes map[string]DescriptorType
 	sources  *sources.SourceGen
 }
@@ -19,7 +19,8 @@ type AllowedDescriptors struct {
 type DescriptorType int
 
 const (
-	EnumDescriptorType DescriptorType = iota
+	UnknownDescriptorType DescriptorType = iota
+	EnumDescriptorType
 	FreeDescriptorType
 	NumericDescriptorType
 )
@@ -28,6 +29,12 @@ var keyName = map[DescriptorType]string{
 	EnumDescriptorType:    "enum",
 	FreeDescriptorType:    "free",
 	NumericDescriptorType: "number",
+}
+
+type Descriptor interface {
+	Type() DescriptorType
+	KeyName() string
+	IsDistinct() bool
 }
 
 type EnumDesc struct {
@@ -72,9 +79,9 @@ type ValueConstraint struct {
 func New() *AllowedDescriptors {
 	return &AllowedDescriptors{
 		keyTypes: make(map[string]DescriptorType),
-		Enum:     make(map[string]*EnumDesc),
-		Free:     make(map[string]*FreeDesc),
-		Numeric:  make(map[string]*NumericDesc),
+		enums:    make(map[string]*EnumDesc),
+		frees:    make(map[string]*FreeDesc),
+		numerics: make(map[string]*NumericDesc),
 		Problems: problem.New(),
 		sources:  sources.SourceGenerator(),
 	}

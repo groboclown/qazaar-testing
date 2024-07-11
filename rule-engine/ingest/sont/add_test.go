@@ -30,13 +30,13 @@ func Test_Add(t *testing.T) {
 	if s.Problems.HasProblems() {
 		t.Errorf("Descriptor had problems: %v", s.Problems.Problems())
 	}
-	if len(s.Enum) != 1 {
+	if len(s.Enums()) != 1 {
 		t.Error("Descriptor[0] was not an enum")
 	}
-	if len(s.Free) != 1 {
+	if len(s.Frees()) != 1 {
 		t.Error("Descriptor[1] was not a free")
 	}
-	if len(s.Numeric) != 1 {
+	if len(s.Numerics()) != 1 {
 		t.Error("Descriptor[2] was not a numeric")
 	}
 }

@@ -1,3 +1,4 @@
+// Under the Apache-2.0 License
 package descriptor
 
 import "github.com/groboclown/qazaar-testing/rule-engine/schema/rules"

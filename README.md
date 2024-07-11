@@ -1,5 +1,7 @@
 # Qazaar
 
+(Soon to be renamed to *QaLute*)
+
 ## The Test Organizer Tool
 
 ## A Strong Dose of Quality Courage

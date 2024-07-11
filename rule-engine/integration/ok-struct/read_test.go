@@ -32,14 +32,14 @@ func Test_Reader(t *testing.T) {
 		t.Fatal(probs.Problems())
 	}
 
-	if len(all.OntDescriptors.Enum) != 3 {
-		t.Errorf("incorrectly read ont-enum (%d)", len(all.OntDescriptors.Enum))
+	if len(all.OntDescriptors.Enums()) != 3 {
+		t.Errorf("incorrectly read ont-enum (%d)", len(all.OntDescriptors.Enums()))
 	}
-	if len(all.OntDescriptors.Numeric) != 0 {
-		t.Errorf("incorrectly read ont-numeric (%d)", len(all.OntDescriptors.Numeric))
+	if len(all.OntDescriptors.Numerics()) != 0 {
+		t.Errorf("incorrectly read ont-numeric (%d)", len(all.OntDescriptors.Numerics()))
 	}
-	if len(all.OntDescriptors.Free) != 4 {
-		t.Errorf("incorrectly read ont-free (%d)", len(all.OntDescriptors.Free))
+	if len(all.OntDescriptors.Frees()) != 4 {
+		t.Errorf("incorrectly read ont-free (%d)", len(all.OntDescriptors.Frees()))
 	}
 	if len(all.RuleSets.Groups) != 2 {
 		t.Errorf("incorrectly read rules-groups (%d)", len(all.RuleSets.Groups))

@@ -82,7 +82,7 @@ func (s *AllowedDescriptors) addEnum(obj *ontology.EnumDescriptor, src *sources.
 	if s.hasDup(EnumDescriptorType, obj.Key, sl, s.Problems) {
 		return
 	}
-	s.Enum[string(obj.Key)] = &EnumDesc{
+	s.enums[string(obj.Key)] = &EnumDesc{
 		Comments:     comments.JoinOntComments(obj.Comment, obj.Comments),
 		Distinct:     obj.Distinct,
 		Enum:         enumMap(obj.Enum),
@@ -108,7 +108,7 @@ func (s *AllowedDescriptors) addFree(obj *ontology.FreeDescriptor, src *sources.
 	if s.hasDup(FreeDescriptorType, obj.Key, sl, s.Problems) {
 		return
 	}
-	s.Free[string(obj.Key)] = &FreeDesc{
+	s.frees[string(obj.Key)] = &FreeDesc{
 		Comments:      comments.JoinOntComments(obj.Comment, obj.Comments),
 		Distinct:      obj.Distinct,
 		Key:           string(obj.Key),
@@ -128,7 +128,7 @@ func (s *AllowedDescriptors) addNumeric(obj *ontology.NumericDescriptor, src *so
 	if s.hasDup(NumericDescriptorType, obj.Key, sl, s.Problems) {
 		return
 	}
-	s.Numeric[string(obj.Key)] = &NumericDesc{
+	s.numerics[string(obj.Key)] = &NumericDesc{
 		Comments:     comments.JoinOntComments(obj.Comment, obj.Comments),
 		Distinct:     obj.Distinct,
 		Key:          string(obj.Key),

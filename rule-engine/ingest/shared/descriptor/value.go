@@ -1,6 +1,9 @@
 // Under the Apache-2.0 License
 package descriptor
 
+// Join turns the list of shared descriptor value objects into a split list of string and float.
+//
+// This does not handle the "distinct key" case.
 func Join(vals []DescriptorValue) (sl []string, fl []float64) {
 	sl = make([]string, 0)
 	fl = make([]float64, 0)
@@ -15,11 +18,18 @@ func Join(vals []DescriptorValue) (sl []string, fl []float64) {
 	return
 }
 
+// JoinKey turns the key and list of values into a shared descriptor.
+//
+// This does not handle the "distinct key" case.
 func JoinKey(key string, vals []DescriptorValue) *Descriptor {
 	sl, fl := Join(vals)
 	return JoinKeyValues(key, sl, fl)
 }
 
+// JoinKeyValues turns the key and list of values into a shared descriptor.
+//
+// This does not handle the "distinct key" case.  For that, use `DistinctValueArray()` or
+// `Descriptor.Distinct()`.
 func JoinKeyValues(key string, text []string, numbers []float64) *Descriptor {
 	return &Descriptor{
 		Key:    key,
@@ -28,6 +38,7 @@ func JoinKeyValues(key string, text []string, numbers []float64) *Descriptor {
 	}
 }
 
+// Decode turns the simple value (string or numeric) into a DescriptorValue.
 func Decode(val any) DescriptorValue {
 	var f float64 = 0
 	switch v := val.(type) {
