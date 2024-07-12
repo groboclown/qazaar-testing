@@ -9,6 +9,7 @@ type DescriptorValueBuilder[T DescriptorValueTypes] interface {
 	List() []T
 	Count() int
 	Has(n T) bool
+	IsDistinct() bool
 	Copy() DescriptorValueBuilder[T]
 }
 
@@ -62,6 +63,9 @@ func (d *duplicateNumberValue) Count() int {
 func (d *duplicateNumberValue) Has(n float64) bool {
 	return hasExactList(*d, n)
 }
+func (d *duplicateNumberValue) IsDistinct() bool {
+	return false
+}
 func (d *duplicateNumberValue) Copy() DescriptorValueBuilder[float64] {
 	v := make([]float64, len(*d))
 	copy(v, *d)
@@ -93,6 +97,9 @@ func (d *distinctNumberValue) Count() int {
 }
 func (d *distinctNumberValue) Has(n float64) bool {
 	return hasExactMap(*d, n)
+}
+func (d *distinctNumberValue) IsDistinct() bool {
+	return true
 }
 func (d *distinctNumberValue) Copy() DescriptorValueBuilder[float64] {
 	v := make(map[float64]bool)
@@ -130,6 +137,9 @@ func (d *duplicateCaseSensitiveValue) Count() int {
 func (d *duplicateCaseSensitiveValue) Has(n string) bool {
 	return hasExactList(*d, n)
 }
+func (d *duplicateCaseSensitiveValue) IsDistinct() bool {
+	return false
+}
 func (d *duplicateCaseSensitiveValue) Copy() DescriptorValueBuilder[string] {
 	v := make([]string, len(*d))
 	copy(v, *d)
@@ -165,6 +175,9 @@ func (d *duplicateCaseInsensitiveValue) Count() int {
 }
 func (d *duplicateCaseInsensitiveValue) Has(n string) bool {
 	return hasSensitiveList(*d, n)
+}
+func (d *duplicateCaseInsensitiveValue) IsDistinct() bool {
+	return false
 }
 func (d *duplicateCaseInsensitiveValue) Copy() DescriptorValueBuilder[string] {
 	v := make([]string, len(*d))
@@ -202,6 +215,9 @@ func (d *distinctCaseInsensitiveValue) Count() int {
 func (d *distinctCaseInsensitiveValue) Has(n string) bool {
 	return hasSensitiveMap(*d, n)
 }
+func (d *distinctCaseInsensitiveValue) IsDistinct() bool {
+	return true
+}
 func (d *distinctCaseInsensitiveValue) Copy() DescriptorValueBuilder[string] {
 	v := make(map[string]bool)
 	addExactMap(v, *d)
@@ -237,6 +253,9 @@ func (d *distinctCaseSensitiveValue) Count() int {
 }
 func (d *distinctCaseSensitiveValue) Has(n string) bool {
 	return hasExactMap(*d, n)
+}
+func (d *distinctCaseSensitiveValue) IsDistinct() bool {
+	return true
 }
 func (d *distinctCaseSensitiveValue) Copy() DescriptorValueBuilder[string] {
 	v := make(map[string]bool)

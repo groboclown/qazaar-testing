@@ -185,7 +185,7 @@ func addStringCheck(val map[string]any, asRe bool, checks *ValueCheckSet) error 
 		return err
 	}
 
-	checks.Text = append(checks.Text, re)
+	checks.Text = append(checks.Text, StringCheck{re})
 	return nil
 }
 

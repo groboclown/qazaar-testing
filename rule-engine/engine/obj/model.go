@@ -20,11 +20,11 @@ type ObjSource struct {
 	Source    []sources.Source
 }
 
-// DescriptorValue is an engine-specific representation of the value for any key.
+// DescriptorValues is an engine-specific representation of the value for any key.
 //
 // For numeric descriptors, the Text will be nil.  For string descriptors, the Number
 // will be nil.
-type DescriptorValue struct {
+type DescriptorValues struct {
 	Text   []string
 	Number []float64
 }

@@ -119,6 +119,10 @@ type ValueCheckSet struct {
 	Numeric []NumericBoundsCheck
 }
 
+func (c ValueCheckSet) Count() int {
+	return len(c.Text) + len(c.Numeric)
+}
+
 type CollectionCheckOperation int
 
 const (
@@ -132,7 +136,13 @@ type CollectionCheck struct {
 	Collection ValueCheckSet
 }
 
-type StringCheck *regexp.Regexp
+type StringCheck struct {
+	R *regexp.Regexp
+}
+
+func (s StringCheck) Matches(v string) bool {
+	return s.R.MatchString(v)
+}
 
 type NumericBoundsCheck struct {
 	Min float64
