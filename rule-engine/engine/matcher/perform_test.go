@@ -12,7 +12,7 @@ import (
 )
 
 func Test_IsContainsMatch(t *testing.T) {
-	t.Run("simple-number-all-ok", func(t *testing.T) {
+	t.Run("1-number-all-ok", func(t *testing.T) {
 		o := mkObj().numeric("e1", false, 1.5)
 		c := &srule.ContainsMatcher{
 			Operation: srule.ContainsAll,
@@ -28,7 +28,7 @@ func Test_IsContainsMatch(t *testing.T) {
 			t.Error("did not match")
 		}
 	})
-	t.Run("simple-number-all-fail", func(t *testing.T) {
+	t.Run("1-number-all-fail", func(t *testing.T) {
 		o := mkObj().numeric("e1", false, 1.5)
 		c := &srule.ContainsMatcher{
 			Operation: srule.ContainsAll,
@@ -37,6 +37,70 @@ func Test_IsContainsMatch(t *testing.T) {
 			Key:       "e1",
 			Checks: srule.ValueCheckSet{
 				Numeric: []srule.NumericBoundsCheck{{Min: 2, Max: 3}},
+				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
+			},
+		}
+		if matcher.IsContainsMatch(o.eo, c) {
+			t.Error("incorrectly matched")
+		}
+	})
+	t.Run("2.2-number-all-ok", func(t *testing.T) {
+		o := mkObj().numeric("e1", false, 1.5, 1.8)
+		c := &srule.ContainsMatcher{
+			Operation: srule.ContainsAll,
+			Count:     false,
+			Distinct:  false,
+			Key:       "e1",
+			Checks: srule.ValueCheckSet{
+				Numeric: []srule.NumericBoundsCheck{{Min: 1, Max: 2}, {Min: 1, Max: 2}},
+				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
+			},
+		}
+		if !matcher.IsContainsMatch(o.eo, c) {
+			t.Error("did not match")
+		}
+	})
+	t.Run("2.2-number-all-fail", func(t *testing.T) {
+		o := mkObj().numeric("e1", false, 2.2, -1.0)
+		c := &srule.ContainsMatcher{
+			Operation: srule.ContainsAll,
+			Count:     false,
+			Distinct:  false,
+			Key:       "e1",
+			Checks: srule.ValueCheckSet{
+				Numeric: []srule.NumericBoundsCheck{{Min: 1, Max: 2}, {Min: 1, Max: 2}},
+				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
+			},
+		}
+		if matcher.IsContainsMatch(o.eo, c) {
+			t.Error("incorrectly matched")
+		}
+	})
+	t.Run("2.2-number-all-partial-fail", func(t *testing.T) {
+		o := mkObj().numeric("e1", false, 2.2, 1.1)
+		c := &srule.ContainsMatcher{
+			Operation: srule.ContainsAll,
+			Count:     false,
+			Distinct:  false,
+			Key:       "e1",
+			Checks: srule.ValueCheckSet{
+				Numeric: []srule.NumericBoundsCheck{{Min: 1, Max: 2}, {Min: 1, Max: 2}},
+				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
+			},
+		}
+		if matcher.IsContainsMatch(o.eo, c) {
+			t.Error("incorrectly matched")
+		}
+	})
+	t.Run("2.1-number-exact-partial-fail", func(t *testing.T) {
+		o := mkObj().numeric("e1", false, 2.2, 1.1)
+		c := &srule.ContainsMatcher{
+			Operation: srule.ContainsExactly,
+			Count:     false,
+			Distinct:  false,
+			Key:       "e1",
+			Checks: srule.ValueCheckSet{
+				Numeric: []srule.NumericBoundsCheck{{Min: 1, Max: 2}, {Min: 1, Max: 2}},
 				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
 			},
 		}

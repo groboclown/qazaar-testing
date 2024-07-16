@@ -26,14 +26,14 @@ type Rule struct {
 }
 
 type Group struct {
-	Id        string
-	Variables map[string]*VariableDef
-	Matchers  *MatchingDescriptorSet
-	// SharedValues
-	Alterations  []Alteration
-	Convergences []Convergence
-	Comments     []string
-	Sources      []sources.Source
+	Id              string
+	Variables       map[string]*VariableDef
+	Matchers        *MatchingDescriptorSet
+	KeySharedValues []string
+	Alterations     []Alteration
+	Convergences    []Convergence
+	Comments        []string
+	Sources         []sources.Source
 }
 
 type ConvergenceType int

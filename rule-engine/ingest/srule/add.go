@@ -43,14 +43,23 @@ func (r *RuleSet) addGroup(obj *rules.Group, src *sources.RulesSource) {
 	}
 	s := src.DocumentSources(obj.Sources)
 	r.Groups = append(r.Groups, &Group{
-		Comments:     comments.JoinRuleComments(obj.Comment, obj.Comments),
-		Sources:      s,
-		Id:           string(obj.Id),
-		Variables:    joinVariableMap(obj.Variables, src, r.Problems),
-		Matchers:     joinMatchers(obj.MatchingDescriptors, src, r.Problems),
-		Alterations:  joinAlterations(obj.Alterations, src, r.Problems),
-		Convergences: joinConvergences(obj.Convergences, src, r.Problems),
+		Comments:        comments.JoinRuleComments(obj.Comment, obj.Comments),
+		Sources:         s,
+		Id:              string(obj.Id),
+		Variables:       joinVariableMap(obj.Variables, src, r.Problems),
+		Matchers:        joinMatchers(obj.MatchingDescriptors, src, r.Problems),
+		KeySharedValues: joinKeys(obj.SharedValues),
+		Alterations:     joinAlterations(obj.Alterations, src, r.Problems),
+		Convergences:    joinConvergences(obj.Convergences, src, r.Problems),
 	})
+}
+
+func joinKeys(keys []rules.DescriptorKey) []string {
+	ret := make([]string, len(keys))
+	for i, k := range keys {
+		ret[i] = string(k)
+	}
+	return ret
 }
 
 func joinAlterations(
