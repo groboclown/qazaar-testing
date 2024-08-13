@@ -13,29 +13,39 @@ func (s *SogInstance) IsRecursion(o *obj.EngineObj, ctx context.Context) bool {
 	if s == nil || o == nil {
 		return false
 	}
-	initial := make([]*obj.ObjSource, len(s.members))
-	for i, m := range s.members {
-		if m == o {
-			return true
+	q, r := concurrent.NewEarlyExit[*obj.ObjSource](0)
+	go fetchAllSources(q, s.members)
+	for {
+		select {
+		case v, ok := <-r.Reader():
+			if &o.Source == v {
+				r.Stop()
+				return true
+			}
+			if !ok {
+				r.Stop()
+				return false
+			}
+		case <-ctx.Done():
+			r.Stop()
+			return false
 		}
-		initial[i] = &m.Source
 	}
-	ret := <-concurrent.RunEarlyExit(recCheck{&o.Source}, ctx, initial)
-	return ret == &recYes
 }
 
-type recCheck struct {
-	against *obj.ObjSource
-}
-
-var recYes = true
-
-func (r recCheck) Perform(v *obj.ObjSource, otherWorkers chan<- *obj.ObjSource) (*bool, bool) {
-	if r.against == v {
-		return &recYes, true
+func fetchAllSources(q concurrent.EarlyExitQueue[*obj.ObjSource], members []*obj.EngineObj) {
+	stack := make([]*obj.ObjSource, len(members))
+	for i, m := range members {
+		stack[i] = &m.Source
 	}
-	for _, p := range v.Parents {
-		otherWorkers <- p
+
+	for len(stack) > 0 {
+		curr := stack[0]
+		stack = stack[1:]
+		if _, stopped := q.QueueAll(curr.Parents...); stopped {
+			return
+		}
+		stack = append(stack, curr.Parents...)
 	}
-	return nil, false
+	q.Finished()
 }

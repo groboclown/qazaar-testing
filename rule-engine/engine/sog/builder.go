@@ -68,7 +68,7 @@ const (
 
 // Add adds the object to the SOG, and returns the instance + if it's a newly created instance.
 //
-// If the object does not match this builder, then it returns nil.
+// If the object does not match this builder, then it returns NoMatch.
 func (s *SogBuilder) Add(o *obj.EngineObj) SogBuilderAddResult {
 	if o == nil {
 		return NoMatch
@@ -99,6 +99,7 @@ func (s *SogBuilder) Add(o *obj.EngineObj) SogBuilderAddResult {
 		s.byId[si.id] = si
 	} else {
 		if si.IsRecursion(o, context.Background()) {
+			// Do not add the item.
 			return Recursion
 		}
 	}
@@ -109,7 +110,7 @@ func (s *SogBuilder) Add(o *obj.EngineObj) SogBuilderAddResult {
 // matchGroup finds the sog instance associated with the engine object.
 //
 // If the engine object does not match this rule, then it returns nil.
-// If this object creates a new instance, then it returns true.
+// If this object creates a new instance, then it returns that instance.
 func (s *SogBuilder) matching(shared map[string]obj.DescriptorValues) *SogInstance {
 	// No identifier derived from the shared keys + values is guaranteed unique, so
 	// we must look through item by item.
