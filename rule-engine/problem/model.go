@@ -17,6 +17,7 @@ type Problem struct {
 	Level   ProblemLevel
 	Message string
 	Sources []sources.Source
+	Context any
 }
 
 // ProblemSet contains many problems.

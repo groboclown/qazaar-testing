@@ -2,18 +2,46 @@
 package matcher_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/groboclown/qazaar-testing/rule-engine/engine/matcher"
 	"github.com/groboclown/qazaar-testing/rule-engine/engine/obj"
-	"github.com/groboclown/qazaar-testing/rule-engine/ingest/shared/descriptor"
-	"github.com/groboclown/qazaar-testing/rule-engine/ingest/shared/sources"
+	"github.com/groboclown/qazaar-testing/rule-engine/ingest"
+	"github.com/groboclown/qazaar-testing/rule-engine/ingest/sont"
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest/srule"
 )
 
 func Test_IsContainsMatch(t *testing.T) {
+	ont, err := ingest.ParseOntology(strings.NewReader(`
+	{
+		"$schema": "",
+		"descriptors": [
+			{
+				"type":         "number",
+				"key":          "e1",
+				"distinct":     false,
+				"maximum":      100,
+				"minimum":      -100,
+				"maximumCount": 100
+			}
+		]
+	}
+	`), "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	descriptors := sont.New()
+	descriptors.Add(ont)
+	if descriptors.Problems.HasProblems() {
+		t.Fatal(descriptors.Problems.Problems())
+	}
+	factory := obj.NewObjFactory(descriptors)
+	source := obj.ObjSource{}
+
 	t.Run("1-number-all-ok", func(t *testing.T) {
-		o := mkObj().numeric("e1", false, 1.5)
+		o := factory.Empty(source)
+		o.Add("e1", floats(1.5))
 		c := &srule.ContainsMatcher{
 			Operation: srule.ContainsAll,
 			Count:     false,
@@ -24,12 +52,13 @@ func Test_IsContainsMatch(t *testing.T) {
 				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
 			},
 		}
-		if !matcher.IsContainsMatch(o.eo, c) {
+		if !matcher.IsContainsMatch(o.Seal(), c) {
 			t.Error("did not match")
 		}
 	})
 	t.Run("1-number-all-fail", func(t *testing.T) {
-		o := mkObj().numeric("e1", false, 1.5)
+		o := factory.Empty(source)
+		o.Add("e1", floats(1.5))
 		c := &srule.ContainsMatcher{
 			Operation: srule.ContainsAll,
 			Count:     false,
@@ -40,12 +69,13 @@ func Test_IsContainsMatch(t *testing.T) {
 				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
 			},
 		}
-		if matcher.IsContainsMatch(o.eo, c) {
+		if matcher.IsContainsMatch(o.Seal(), c) {
 			t.Error("incorrectly matched")
 		}
 	})
 	t.Run("2.2-number-all-ok", func(t *testing.T) {
-		o := mkObj().numeric("e1", false, 1.5, 1.8)
+		o := factory.Empty(source)
+		o.Add("e1", floats(1.5, 1.8))
 		c := &srule.ContainsMatcher{
 			Operation: srule.ContainsAll,
 			Count:     false,
@@ -56,12 +86,13 @@ func Test_IsContainsMatch(t *testing.T) {
 				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
 			},
 		}
-		if !matcher.IsContainsMatch(o.eo, c) {
+		if !matcher.IsContainsMatch(o.Seal(), c) {
 			t.Error("did not match")
 		}
 	})
 	t.Run("2.2-number-all-fail", func(t *testing.T) {
-		o := mkObj().numeric("e1", false, 2.2, -1.0)
+		o := factory.Empty(source)
+		o.Add("e1", floats(2.2, -1.0))
 		c := &srule.ContainsMatcher{
 			Operation: srule.ContainsAll,
 			Count:     false,
@@ -72,12 +103,13 @@ func Test_IsContainsMatch(t *testing.T) {
 				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
 			},
 		}
-		if matcher.IsContainsMatch(o.eo, c) {
+		if matcher.IsContainsMatch(o.Seal(), c) {
 			t.Error("incorrectly matched")
 		}
 	})
 	t.Run("2.2-number-all-partial-fail", func(t *testing.T) {
-		o := mkObj().numeric("e1", false, 2.2, 1.1)
+		o := factory.Empty(source)
+		o.Add("e1", floats(2.2, 1.1))
 		c := &srule.ContainsMatcher{
 			Operation: srule.ContainsAll,
 			Count:     false,
@@ -88,12 +120,13 @@ func Test_IsContainsMatch(t *testing.T) {
 				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
 			},
 		}
-		if matcher.IsContainsMatch(o.eo, c) {
+		if matcher.IsContainsMatch(o.Seal(), c) {
 			t.Error("incorrectly matched")
 		}
 	})
 	t.Run("2.1-number-exact-partial-fail", func(t *testing.T) {
-		o := mkObj().numeric("e1", false, 2.2, 1.1)
+		o := factory.Empty(source)
+		o.Add("e1", floats(2.2, 1.1))
 		c := &srule.ContainsMatcher{
 			Operation: srule.ContainsExactly,
 			Count:     false,
@@ -104,46 +137,12 @@ func Test_IsContainsMatch(t *testing.T) {
 				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
 			},
 		}
-		if matcher.IsContainsMatch(o.eo, c) {
+		if matcher.IsContainsMatch(o.Seal(), c) {
 			t.Error("incorrectly matched")
 		}
 	})
 }
 
-type objBuilder struct {
-	eo *obj.EngineObj
-}
-
-func mkObj() *objBuilder {
-	return &objBuilder{&obj.EngineObj{
-		Source: obj.ObjSource{
-			Parents:   nil,
-			Construct: nil,
-			Source:    []sources.Source{{}},
-		},
-		Numeric: make(map[string]descriptor.DescriptorValueBuilder[float64]),
-		Enum:    make(map[string]descriptor.DescriptorValueBuilder[string]),
-		Free:    make(map[string]descriptor.DescriptorValueBuilder[string]),
-	}}
-}
-
-func (o *objBuilder) enum(key string, distinct bool, val ...string) *objBuilder {
-	b := descriptor.NewTextBuilder(distinct, true)
-	b.AddList(val)
-	o.eo.Enum[key] = b
-	return o
-}
-
-func (o *objBuilder) free(key string, distinct bool, caseSensitive bool, val ...string) *objBuilder {
-	b := descriptor.NewTextBuilder(distinct, caseSensitive)
-	b.AddList(val)
-	o.eo.Free[key] = b
-	return o
-}
-
-func (o *objBuilder) numeric(key string, distinct bool, val ...float64) *objBuilder {
-	b := descriptor.NewNumericBuilder(distinct)
-	b.AddList(val)
-	o.eo.Numeric[key] = b
-	return o
+func floats(v ...float64) obj.DescriptorValues {
+	return obj.DescriptorValues{Number: v}
 }

@@ -5,6 +5,35 @@ type TypedDescriptor struct {
 	Enum    *EnumDesc
 	Free    *FreeDesc
 	Numeric *NumericDesc
+
+	key     string
+	keyType DescriptorType
+}
+
+func (t *TypedDescriptor) Type() DescriptorType {
+	return t.keyType
+}
+func (t *TypedDescriptor) KeyName() string {
+	return t.key
+}
+func (t *TypedDescriptor) IsDistinct() bool {
+	switch {
+	case t.Enum != nil:
+		return t.Enum.Distinct
+	case t.Free != nil:
+		return t.Free.Distinct
+	case t.Numeric != nil:
+		return t.Numeric.Distinct
+	default:
+		return false
+	}
+}
+func (t *TypedDescriptor) IsCaseSensitive() bool {
+	if t.Free != nil {
+		return t.Free.CaseSensitive
+	}
+	// Otherwise, default to an exact match.
+	return true
 }
 
 func (s *AllowedDescriptors) Find(key string) *TypedDescriptor {
@@ -24,6 +53,8 @@ func (s *AllowedDescriptors) Find(key string) *TypedDescriptor {
 		n = s.numerics[key]
 	}
 	return &TypedDescriptor{
+		key:     key,
+		keyType: t,
 		Enum:    e,
 		Free:    f,
 		Numeric: n,
@@ -36,13 +67,6 @@ func (s *AllowedDescriptors) Type(key string) DescriptorType {
 		return UnknownDescriptorType
 	}
 	return t
-}
-
-func typeDistinct(t DescriptorType, d Descriptor) (DescriptorType, bool) {
-	if d == nil {
-		return t, false
-	}
-	return t, d.IsDistinct()
 }
 
 func (s *AllowedDescriptors) Enums() []*EnumDesc {

@@ -3,14 +3,28 @@ package descriptor
 
 import "strings"
 
-type DescriptorValueBuilder[T DescriptorValueTypes] interface {
-	AddList(n []T)
-	Add(n DescriptorValueBuilder[T])
+type ImmutableDescriptorValue[T DescriptorValueTypes] interface {
 	List() []T
 	Count() int
 	Has(n T) bool
 	IsDistinct() bool
+	IsCaseSensitive() bool
 	Copy() DescriptorValueBuilder[T]
+}
+
+type DescriptorValueBuilder[T DescriptorValueTypes] interface {
+	AddList(n []T)
+	Add(n DescriptorValueBuilder[T])
+	RemoveOnce(n T)
+	RemoveAll(n T)
+	Clear()
+	List() []T
+	Count() int
+	Has(n T) bool
+	IsDistinct() bool
+	IsCaseSensitive() bool
+	Copy() DescriptorValueBuilder[T]
+	Seal() ImmutableDescriptorValue[T]
 }
 
 func NewNumericBuilder(distinct bool) DescriptorValueBuilder[float64] {
@@ -54,6 +68,15 @@ func (d *duplicateNumberValue) Add(n DescriptorValueBuilder[float64]) {
 func (d *duplicateNumberValue) AddList(n []float64) {
 	(*d) = append((*d), n...)
 }
+func (d *duplicateNumberValue) RemoveOnce(n float64) {
+	removeExactListOnce(*d, n)
+}
+func (d *duplicateNumberValue) RemoveAll(n float64) {
+	removeExactListAll(*d, n)
+}
+func (d *duplicateNumberValue) Clear() {
+	(*d) = make([]float64, 0)
+}
 func (d *duplicateNumberValue) List() []float64 {
 	return (*d)
 }
@@ -65,6 +88,12 @@ func (d *duplicateNumberValue) Has(n float64) bool {
 }
 func (d *duplicateNumberValue) IsDistinct() bool {
 	return false
+}
+func (d *duplicateNumberValue) IsCaseSensitive() bool {
+	return false
+}
+func (d *duplicateNumberValue) Seal() ImmutableDescriptorValue[float64] {
+	return d.Copy()
 }
 func (d *duplicateNumberValue) Copy() DescriptorValueBuilder[float64] {
 	v := make([]float64, len(*d))
@@ -89,6 +118,15 @@ func (d *distinctNumberValue) Add(n DescriptorValueBuilder[float64]) {
 func (d *distinctNumberValue) AddList(n []float64) {
 	addExactList(*d, n)
 }
+func (d *distinctNumberValue) RemoveOnce(n float64) {
+	removeExactMap(*d, n)
+}
+func (d *distinctNumberValue) RemoveAll(n float64) {
+	removeExactMap(*d, n)
+}
+func (d *distinctNumberValue) Clear() {
+	(*d) = make(map[float64]bool)
+}
 func (d *distinctNumberValue) List() []float64 {
 	return DistinctMapArray(*d)
 }
@@ -100,6 +138,12 @@ func (d *distinctNumberValue) Has(n float64) bool {
 }
 func (d *distinctNumberValue) IsDistinct() bool {
 	return true
+}
+func (d *distinctNumberValue) IsCaseSensitive() bool {
+	return false
+}
+func (d *distinctNumberValue) Seal() ImmutableDescriptorValue[float64] {
+	return d.Copy()
 }
 func (d *distinctNumberValue) Copy() DescriptorValueBuilder[float64] {
 	v := make(map[float64]bool)
@@ -128,6 +172,15 @@ func (d *duplicateCaseSensitiveValue) Add(n DescriptorValueBuilder[string]) {
 func (d *duplicateCaseSensitiveValue) AddList(n []string) {
 	*d = append(*d, n...)
 }
+func (d *duplicateCaseSensitiveValue) RemoveOnce(n string) {
+	removeExactListOnce(*d, n)
+}
+func (d *duplicateCaseSensitiveValue) RemoveAll(n string) {
+	removeExactListAll(*d, n)
+}
+func (d *duplicateCaseSensitiveValue) Clear() {
+	(*d) = make([]string, 0)
+}
 func (d *duplicateCaseSensitiveValue) List() []string {
 	return *d
 }
@@ -139,6 +192,12 @@ func (d *duplicateCaseSensitiveValue) Has(n string) bool {
 }
 func (d *duplicateCaseSensitiveValue) IsDistinct() bool {
 	return false
+}
+func (d *duplicateCaseSensitiveValue) IsCaseSensitive() bool {
+	return true
+}
+func (d *duplicateCaseSensitiveValue) Seal() ImmutableDescriptorValue[string] {
+	return d.Copy()
 }
 func (d *duplicateCaseSensitiveValue) Copy() DescriptorValueBuilder[string] {
 	v := make([]string, len(*d))
@@ -157,15 +216,24 @@ func (d *duplicateCaseInsensitiveValue) Add(n DescriptorValueBuilder[string]) {
 	case *duplicateCaseInsensitiveValue:
 		*d = append(*d, (*a)...)
 	case *distinctCaseInsensitiveValue:
-		*d = appendExactMap(*d, *a)
+		*d = appendInsensitiveMap(*d, *a)
 	case *distinctCaseSensitiveValue:
-		*d = appendSensitiveMap(*d, *a)
+		*d = appendExactMap(*d, *a)
 	default:
 		(*d) = append((*d), a.List()...)
 	}
 }
 func (d *duplicateCaseInsensitiveValue) AddList(n []string) {
-	*d = appendSensitiveList(*d, n)
+	*d = appendInsensitiveList(*d, n)
+}
+func (d *duplicateCaseInsensitiveValue) RemoveOnce(n string) {
+	removeInsensitiveListOnce(*d, n)
+}
+func (d *duplicateCaseInsensitiveValue) RemoveAll(n string) {
+	removeInsensitiveListAll(*d, n)
+}
+func (d *duplicateCaseInsensitiveValue) Clear() {
+	(*d) = make([]string, 0)
 }
 func (d *duplicateCaseInsensitiveValue) List() []string {
 	return *d
@@ -174,10 +242,16 @@ func (d *duplicateCaseInsensitiveValue) Count() int {
 	return len(*d)
 }
 func (d *duplicateCaseInsensitiveValue) Has(n string) bool {
-	return hasSensitiveList(*d, n)
+	return hasInsensitiveList(*d, n)
 }
 func (d *duplicateCaseInsensitiveValue) IsDistinct() bool {
 	return false
+}
+func (d *duplicateCaseInsensitiveValue) IsCaseSensitive() bool {
+	return false
+}
+func (d *duplicateCaseInsensitiveValue) Seal() ImmutableDescriptorValue[string] {
+	return d.Copy()
 }
 func (d *duplicateCaseInsensitiveValue) Copy() DescriptorValueBuilder[string] {
 	v := make([]string, len(*d))
@@ -194,17 +268,26 @@ func (d *distinctCaseInsensitiveValue) Add(n DescriptorValueBuilder[string]) {
 	case *duplicateCaseSensitiveValue:
 		d.AddList(*a)
 	case *duplicateCaseInsensitiveValue:
-		addSensitiveList(*d, *a)
+		addInsensitiveList(*d, *a)
 	case *distinctCaseInsensitiveValue:
 		addExactMap(*d, *a)
 	case *distinctCaseSensitiveValue:
-		addSensitiveMap(*d, *a)
+		addInsensitiveMap(*d, *a)
 	default:
 		d.AddList(a.List())
 	}
 }
 func (d *distinctCaseInsensitiveValue) AddList(n []string) {
-	addSensitiveList(*d, n)
+	addInsensitiveList(*d, n)
+}
+func (d *distinctCaseInsensitiveValue) RemoveOnce(n string) {
+	removeInsensitiveMap(*d, n)
+}
+func (d *distinctCaseInsensitiveValue) RemoveAll(n string) {
+	removeInsensitiveMap(*d, n)
+}
+func (d *distinctCaseInsensitiveValue) Clear() {
+	(*d) = make(map[string]bool)
 }
 func (d *distinctCaseInsensitiveValue) List() []string {
 	return DistinctMapArray(*d)
@@ -213,10 +296,16 @@ func (d *distinctCaseInsensitiveValue) Count() int {
 	return len(*d)
 }
 func (d *distinctCaseInsensitiveValue) Has(n string) bool {
-	return hasSensitiveMap(*d, n)
+	return hasInsensitiveMap(*d, n)
 }
 func (d *distinctCaseInsensitiveValue) IsDistinct() bool {
 	return true
+}
+func (d *distinctCaseInsensitiveValue) IsCaseSensitive() bool {
+	return false
+}
+func (d *distinctCaseInsensitiveValue) Seal() ImmutableDescriptorValue[string] {
+	return d.Copy()
 }
 func (d *distinctCaseInsensitiveValue) Copy() DescriptorValueBuilder[string] {
 	v := make(map[string]bool)
@@ -245,6 +334,15 @@ func (d *distinctCaseSensitiveValue) Add(n DescriptorValueBuilder[string]) {
 func (d *distinctCaseSensitiveValue) AddList(n []string) {
 	addExactList(*d, n)
 }
+func (d *distinctCaseSensitiveValue) RemoveOnce(n string) {
+	removeExactMap(*d, n)
+}
+func (d *distinctCaseSensitiveValue) RemoveAll(n string) {
+	removeExactMap(*d, n)
+}
+func (d *distinctCaseSensitiveValue) Clear() {
+	(*d) = make(map[string]bool)
+}
 func (d *distinctCaseSensitiveValue) List() []string {
 	return DistinctMapArray(*d)
 }
@@ -256,6 +354,12 @@ func (d *distinctCaseSensitiveValue) Has(n string) bool {
 }
 func (d *distinctCaseSensitiveValue) IsDistinct() bool {
 	return true
+}
+func (d *distinctCaseSensitiveValue) IsCaseSensitive() bool {
+	return true
+}
+func (d *distinctCaseSensitiveValue) Seal() ImmutableDescriptorValue[string] {
+	return d.Copy()
 }
 func (d *distinctCaseSensitiveValue) Copy() DescriptorValueBuilder[string] {
 	v := make(map[string]bool)
@@ -276,7 +380,7 @@ func appendExactMap[T DescriptorValueTypes](d []T, a map[T]bool) []T {
 	return tl
 }
 
-func appendSensitiveMap(d []string, a map[string]bool) []string {
+func appendInsensitiveMap(d []string, a map[string]bool) []string {
 	i := len(d)
 	tl := make([]string, i+len(a))
 	copy(tl, d)
@@ -287,7 +391,7 @@ func appendSensitiveMap(d []string, a map[string]bool) []string {
 	return tl
 }
 
-func appendSensitiveList(d []string, a []string) []string {
+func appendInsensitiveList(d []string, a []string) []string {
 	i := len(d)
 	tl := make([]string, i+len(a))
 	copy(tl, d)
@@ -310,16 +414,61 @@ func addExactMap[T DescriptorValueTypes](d map[T]bool, a map[T]bool) {
 	}
 }
 
-func addSensitiveMap(d map[string]bool, a map[string]bool) {
+func addInsensitiveMap(d map[string]bool, a map[string]bool) {
 	for k := range a {
 		d[strings.ToLower(k)] = true
 	}
 }
 
-func addSensitiveList(d map[string]bool, a []string) {
+func addInsensitiveList(d map[string]bool, a []string) {
 	for _, v := range a {
 		d[strings.ToLower(v)] = true
 	}
+}
+
+func removeExactListOnce[T DescriptorValueTypes](d []T, v T) []T {
+	n := len(d) - 1
+	if n < 0 {
+		return d
+	}
+	if d[0] == v {
+		return d[1:]
+	}
+	if d[n] == v {
+		return d[:n]
+	}
+	for i := 1; i < n; i++ {
+		if d[i] == v {
+			return append(d[:i], d[i+1:]...)
+		}
+	}
+	return d
+}
+
+func removeExactListAll[T DescriptorValueTypes](d []T, v T) []T {
+	ret := make([]T, 0, len(d))
+	for _, i := range d {
+		if i != v {
+			ret = append(ret, i)
+		}
+	}
+	return ret
+}
+
+func removeInsensitiveListOnce(d []string, v string) []string {
+	return removeExactListOnce(d, strings.ToLower(v))
+}
+
+func removeInsensitiveListAll(d []string, v string) []string {
+	return removeExactListAll(d, strings.ToLower(v))
+}
+
+func removeExactMap[T DescriptorValueTypes](d map[T]bool, v T) {
+	delete(d, v)
+}
+
+func removeInsensitiveMap(d map[string]bool, v string) {
+	delete(d, strings.ToLower(v))
 }
 
 func hasExactList[T DescriptorValueTypes](d []T, e T) bool {
@@ -331,7 +480,7 @@ func hasExactList[T DescriptorValueTypes](d []T, e T) bool {
 	return false
 }
 
-func hasSensitiveList(d []string, e string) bool {
+func hasInsensitiveList(d []string, e string) bool {
 	return hasExactList(d, strings.ToLower(e))
 }
 
@@ -340,6 +489,6 @@ func hasExactMap[T DescriptorValueTypes](d map[T]bool, e T) bool {
 	return ok
 }
 
-func hasSensitiveMap(d map[string]bool, e string) bool {
+func hasInsensitiveMap(d map[string]bool, e string) bool {
 	return hasExactMap(d, strings.ToLower(e))
 }

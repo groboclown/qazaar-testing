@@ -23,7 +23,7 @@ func (f *objFactory) FromDocument(doc *sdoc.DocumentObject) *EngineObj {
 	if f == nil || doc == nil {
 		return nil
 	}
-	ret := newObj(nil, nil, doc.Sources)
+	ret := newObjBuilder(nil, nil, doc.Sources, f.ont)
 	for _, d := range doc.Descriptors {
 		if d == nil {
 			continue
@@ -37,7 +37,7 @@ func (f *objFactory) FromDocument(doc *sdoc.DocumentObject) *EngineObj {
 				continue
 			}
 			v := descriptor.NewTextBuilder(e.Distinct, true)
-			ret.Enum[d.Key] = v
+			ret.enum[d.Key] = v
 			v.AddList(d.Text)
 		case sont.FreeDescriptorType:
 			e := f.ont.Free(d.Key)
@@ -46,7 +46,7 @@ func (f *objFactory) FromDocument(doc *sdoc.DocumentObject) *EngineObj {
 				continue
 			}
 			v := descriptor.NewTextBuilder(e.Distinct, e.CaseSensitive)
-			ret.Free[d.Key] = v
+			ret.free[d.Key] = v
 			v.AddList(d.Text)
 		case sont.NumericDescriptorType:
 			e := f.ont.Numeric(d.Key)
@@ -55,11 +55,11 @@ func (f *objFactory) FromDocument(doc *sdoc.DocumentObject) *EngineObj {
 				continue
 			}
 			v := descriptor.NewNumericBuilder(e.Distinct)
-			ret.Numeric[d.Key] = v
+			ret.numeric[d.Key] = v
 			v.AddList(d.Number)
 		}
 	}
-	return ret
+	return ret.Seal()
 }
 
 // FromGroup creates a new engine object for a self-organizing group.
@@ -70,19 +70,29 @@ func (f *objFactory) FromGroup(members []*EngineObj, groupSrc string) *EngineObj
 		return nil
 	}
 
-	ret := newObj(copySrc(members), &groupSrc, nil)
+	ret := newObjBuilder(copySrc(members), &groupSrc, nil, f.ont)
 	for _, m := range members {
 		for k, vs := range m.Enum {
-			appendBuilder(k, ret.Enum, vs)
+			appendBuilder(k, ret.enum, vs)
 		}
 		for k, vs := range m.Free {
-			appendBuilder(k, ret.Free, vs)
+			appendBuilder(k, ret.free, vs)
 		}
 		for k, vs := range m.Numeric {
-			appendBuilder(k, ret.Numeric, vs)
+			appendBuilder(k, ret.numeric, vs)
 		}
 	}
-	return ret
+	return ret.Seal()
+}
+
+func (f *objFactory) Empty(source ObjSource) EngineObjBuilder {
+	return &engineObjBuilder{
+		source:  source,
+		ont:     f.ont,
+		numeric: make(map[string]descriptor.DescriptorValueBuilder[float64]),
+		enum:    make(map[string]descriptor.DescriptorValueBuilder[string]),
+		free:    make(map[string]descriptor.DescriptorValueBuilder[string]),
+	}
 }
 
 func copySrc(p []*EngineObj) []*ObjSource {
@@ -96,7 +106,7 @@ func copySrc(p []*EngineObj) []*ObjSource {
 func appendBuilder[T descriptor.DescriptorValueTypes](
 	key string,
 	m map[string]descriptor.DescriptorValueBuilder[T],
-	add descriptor.DescriptorValueBuilder[T],
+	add descriptor.ImmutableDescriptorValue[T],
 ) {
 	v, ok := m[key]
 	if !ok {

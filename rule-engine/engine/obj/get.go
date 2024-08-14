@@ -52,6 +52,10 @@ func (o *EngineObj) CountValue(key string) DescriptorValues {
 	return DescriptorValues{Number: []float64{float64(o.Count(key))}}
 }
 
+func (o *EngineObj) String() string {
+	return o.Source.String()
+}
+
 // Distinct turns the values into a distinct list of values.
 func (d DescriptorValues) Distinct() DescriptorValues {
 	var num []float64 = nil
@@ -72,4 +76,25 @@ func (d DescriptorValues) CountValue() DescriptorValues {
 
 func (d DescriptorValues) Count() int {
 	return len(d.Number) + len(d.Text)
+}
+
+func (s ObjSource) String() string {
+	if len(s.Source) <= 0 {
+		return "?"
+	}
+	ver := s.Source[0].Ver()
+	a := s.Source[0].A()
+	rep := s.Source[0].Rep()
+
+	ret := s.Source[0].Loc()
+	if rep != "" {
+		ret = rep + ":" + ret
+	}
+	if a != nil && *a != "" {
+		ret = rep + "#" + *a
+	}
+	if ver != nil && *ver != "" {
+		ret = rep + "@" + *ver
+	}
+	return ret
 }

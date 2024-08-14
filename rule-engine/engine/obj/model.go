@@ -5,6 +5,7 @@ import (
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest/sdoc"
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest/shared/descriptor"
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest/shared/sources"
+	"github.com/groboclown/qazaar-testing/rule-engine/ingest/sont"
 )
 
 // ObjSource traces the source of the object back to its representative origins.
@@ -38,9 +39,20 @@ type EngineObj struct {
 
 	// Note: though these are modifiable values, treat them as read-only once
 	//       returned.
-	Numeric map[string]descriptor.DescriptorValueBuilder[float64]
-	Enum    map[string]descriptor.DescriptorValueBuilder[string]
-	Free    map[string]descriptor.DescriptorValueBuilder[string]
+	Numeric map[string]descriptor.ImmutableDescriptorValue[float64]
+	Enum    map[string]descriptor.ImmutableDescriptorValue[string]
+	Free    map[string]descriptor.ImmutableDescriptorValue[string]
+
+	ont *sont.AllowedDescriptors
+}
+
+type EngineObjBuilder interface {
+	Add(key string, val DescriptorValues)
+	AddDistinct(key string, val DescriptorValues)
+	Remove(key string, val DescriptorValues)
+	RemoveDistinct(key string, val DescriptorValues)
+	Set(key string, val DescriptorValues)
+	Seal() *EngineObj
 }
 
 // ObjFactory constructs new engine objects from sources.
@@ -52,21 +64,7 @@ type ObjFactory interface {
 	//
 	// The group rule may need to perform alterations upon the generated object.
 	FromGroup(members []*EngineObj, groupSrc string) *EngineObj
-}
 
-func newObj(
-	parents []*ObjSource,
-	construct *string,
-	source []sources.Source,
-) *EngineObj {
-	return &EngineObj{
-		Source: ObjSource{
-			Parents:   parents,
-			Construct: construct,
-			Source:    source,
-		},
-		Numeric: make(map[string]descriptor.DescriptorValueBuilder[float64]),
-		Enum:    make(map[string]descriptor.DescriptorValueBuilder[string]),
-		Free:    make(map[string]descriptor.DescriptorValueBuilder[string]),
-	}
+	// Empty creates an object builder.
+	Empty(source ObjSource) EngineObjBuilder
 }

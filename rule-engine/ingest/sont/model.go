@@ -35,6 +35,7 @@ type Descriptor interface {
 	Type() DescriptorType
 	KeyName() string
 	IsDistinct() bool
+	IsCaseSensitive() bool
 }
 
 type EnumDesc struct {

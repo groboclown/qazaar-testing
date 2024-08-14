@@ -21,7 +21,7 @@ import (
 type SogBuilder struct {
 	id      string
 	rule    *srule.Group
-	byId    map[string]*SogInstance
+	byId    map[string]*sogInstanceBuilder
 	factory obj.ObjFactory
 }
 
@@ -33,7 +33,7 @@ func NewBuilder(rule *srule.Group, factory obj.ObjFactory) *SogBuilder {
 	return &SogBuilder{
 		id:      rule.Id,
 		rule:    rule,
-		byId:    make(map[string]*SogInstance),
+		byId:    make(map[string]*sogInstanceBuilder),
 		factory: factory,
 	}
 }
@@ -42,11 +42,15 @@ func NewBuilder(rule *srule.Group, factory obj.ObjFactory) *SogBuilder {
 //
 // This returns the engine object representation of the SOG instances.
 // This can be safely called multiple times.
-func (s *SogBuilder) Seal() []*obj.EngineObj {
-	ret := make([]*obj.EngineObj, len(s.byId))
+func (s *SogBuilder) Seal() []SogInstance {
+	ret := make([]SogInstance, len(s.byId))
 	i := 0
 	for _, v := range s.byId {
-		ret[i] = v.Seal(s.factory, s.id)
+		ret[i] = &sogInstance{
+			members: v.members,
+			obj:     v.seal(s.factory, s.id, s.rule.Alterations),
+			group:   s.rule,
+		}
 		i++
 	}
 	return ret
@@ -54,7 +58,7 @@ func (s *SogBuilder) Seal() []*obj.EngineObj {
 
 // Reset clears out the current list of known SOG instances.
 func (s *SogBuilder) Reset() {
-	s.byId = make(map[string]*SogInstance)
+	s.byId = make(map[string]*sogInstanceBuilder)
 }
 
 type SogBuilderAddResult int
@@ -73,7 +77,7 @@ func (s *SogBuilder) Add(o *obj.EngineObj) SogBuilderAddResult {
 	if o == nil {
 		return NoMatch
 	}
-	if !matcher.IsMatch(o, srule.AndCollection, s.rule.Matchers) {
+	if !matcher.IsMatch(o, s.rule.Matchers) {
 		return NoMatch
 	}
 	shared := groupSharedValues(s.rule, o)
@@ -111,7 +115,7 @@ func (s *SogBuilder) Add(o *obj.EngineObj) SogBuilderAddResult {
 //
 // If the engine object does not match this rule, then it returns nil.
 // If this object creates a new instance, then it returns that instance.
-func (s *SogBuilder) matching(shared map[string]obj.DescriptorValues) *SogInstance {
+func (s *SogBuilder) matching(shared map[string]obj.DescriptorValues) *sogInstanceBuilder {
 	// No identifier derived from the shared keys + values is guaranteed unique, so
 	// we must look through item by item.
 	// Alternatively, we could devise a quick lookup scheme by values, because we

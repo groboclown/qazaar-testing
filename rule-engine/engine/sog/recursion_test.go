@@ -58,7 +58,7 @@ func Test_IsRecursion(t *testing.T) {
 	t.Run("not-recursive", func(t *testing.T) {
 		builder := sog.NewBuilder(&group, obj.NewObjFactory(nil))
 		// Add the previous result.
-		if res := builder.Add(builtObj[0]); res != sog.Created {
+		if res := builder.Add(builtObj[0].Obj()); res != sog.Created {
 			t.Errorf("Expected non-recursive result, found %d", res)
 		}
 		// Add a non-recursive item to the group, but with shared history.
@@ -71,7 +71,7 @@ func Test_IsRecursion(t *testing.T) {
 	t.Run("yes-recursive", func(t *testing.T) {
 		builder := sog.NewBuilder(&group, obj.NewObjFactory(nil))
 		// Add the previous result.
-		if res := builder.Add(builtObj[0]); res != sog.Created {
+		if res := builder.Add(builtObj[0].Obj()); res != sog.Created {
 			t.Errorf("Expected non-recursive result, found %d", res)
 		}
 		// Add a recursive item to the group.

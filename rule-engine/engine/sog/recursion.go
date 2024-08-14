@@ -9,7 +9,7 @@ import (
 )
 
 // IsRecursion checks if the engine object is somewhere in the parent list.
-func (s *SogInstance) IsRecursion(o *obj.EngineObj, ctx context.Context) bool {
+func (s *sogInstanceBuilder) IsRecursion(o *obj.EngineObj, ctx context.Context) bool {
 	if s == nil || o == nil {
 		return false
 	}

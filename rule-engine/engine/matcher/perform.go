@@ -7,7 +7,11 @@ import (
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest/srule"
 )
 
-func IsMatch(
+func IsMatch(obj *obj.EngineObj, matcher *srule.MatchingDescriptorSet) bool {
+	return IsCollectionMatch(obj, srule.AndCollection, matcher)
+}
+
+func IsCollectionMatch(
 	obj *obj.EngineObj,
 	operation srule.CollectionOperation,
 	matcher *srule.MatchingDescriptorSet,
@@ -20,7 +24,7 @@ func IsMatch(
 	// this will just run the matcher with an AND rule, then return the
 	// opposite of that.
 	if operation == srule.NotCollection {
-		return !IsMatch(obj, srule.AndCollection, matcher)
+		return !IsCollectionMatch(obj, srule.AndCollection, matcher)
 	}
 
 	// AND and OR logic is identical except for the matching condition
@@ -31,7 +35,7 @@ func IsMatch(
 	}
 
 	for _, c := range matcher.Collection {
-		if earlyExitCondition == IsMatch(obj, c.Operation, matcher) {
+		if earlyExitCondition == IsCollectionMatch(obj, c.Operation, c.Matchers) {
 			return earlyExitCondition
 		}
 	}
