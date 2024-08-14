@@ -23,7 +23,7 @@ func (f *objFactory) FromDocument(doc *sdoc.DocumentObject) *EngineObj {
 	if f == nil || doc == nil {
 		return nil
 	}
-	ret := newObjBuilder(nil, nil, doc.Sources, f.ont)
+	ret := newObjBuilder(nil, nil, string(doc.Id), doc.Sources, f.ont)
 	for _, d := range doc.Descriptors {
 		if d == nil {
 			continue
@@ -70,7 +70,8 @@ func (f *objFactory) FromGroup(members []*EngineObj, groupSrc string) *EngineObj
 		return nil
 	}
 
-	ret := newObjBuilder(copySrc(members), &groupSrc, nil, f.ont)
+	// TODO change id argument to instead be from the shared key value(s).
+	ret := newObjBuilder(copySrc(members), &groupSrc, groupSrc, nil, f.ont)
 	for _, m := range members {
 		for k, vs := range m.Enum {
 			appendBuilder(k, ret.enum, vs)

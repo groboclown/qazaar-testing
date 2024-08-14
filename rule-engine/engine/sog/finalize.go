@@ -9,6 +9,7 @@ import (
 // asFinalizedObj applies the alterations to the object, and returns the updated object.
 func asFinalizedObj(
 	o *obj.EngineObj,
+	shared map[string]obj.DescriptorValues,
 	alterations []srule.Alteration,
 ) *obj.EngineObj {
 	if o == nil {
@@ -19,6 +20,10 @@ func asFinalizedObj(
 	for _, a := range alterations {
 		applyAlteration(ret, &a)
 	}
+	for key, vals := range shared {
+		ret.Set(key, vals)
+	}
+
 	return ret.Seal()
 }
 

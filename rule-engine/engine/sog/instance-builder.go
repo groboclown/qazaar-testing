@@ -57,7 +57,11 @@ func (s *sogInstanceBuilder) seal(
 	s.sealed = true
 
 	if s.instance == nil {
-		s.instance = asFinalizedObj(factory.FromGroup(s.members, groupId), alterations)
+		s.instance = asFinalizedObj(
+			factory.FromGroup(s.members, groupId),
+			s.shared,
+			alterations,
+		)
 	}
 	return s.instance
 }

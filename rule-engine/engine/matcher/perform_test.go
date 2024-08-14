@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/groboclown/qazaar-testing/rule-engine/engine/matcher"
 	"github.com/groboclown/qazaar-testing/rule-engine/engine/obj"
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest"
@@ -40,8 +41,8 @@ func Test_IsContainsMatch(t *testing.T) {
 	source := obj.ObjSource{}
 
 	t.Run("1-number-all-ok", func(t *testing.T) {
-		o := factory.Empty(source)
-		o.Add("e1", floats(1.5))
+		ob := factory.Empty(source)
+		ob.Add("e1", floats(1.5))
 		c := &srule.ContainsMatcher{
 			Operation: srule.ContainsAll,
 			Count:     false,
@@ -52,13 +53,14 @@ func Test_IsContainsMatch(t *testing.T) {
 				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
 			},
 		}
-		if !matcher.IsContainsMatch(o.Seal(), c) {
-			t.Error("did not match")
+		o := ob.Seal()
+		if ok, errs := matcher.IsContainsMatch(o, c); !ok {
+			t.Errorf("did not match: %v", errs)
 		}
 	})
 	t.Run("1-number-all-fail", func(t *testing.T) {
-		o := factory.Empty(source)
-		o.Add("e1", floats(1.5))
+		ob := factory.Empty(source)
+		ob.Add("e1", floats(1.5))
 		c := &srule.ContainsMatcher{
 			Operation: srule.ContainsAll,
 			Count:     false,
@@ -69,13 +71,20 @@ func Test_IsContainsMatch(t *testing.T) {
 				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
 			},
 		}
-		if matcher.IsContainsMatch(o.Seal(), c) {
-			t.Error("incorrectly matched")
+		o := ob.Seal()
+		ok, errs := matcher.IsContainsMatch(o, c)
+		if ok {
+			t.Fatal("incorrectly matched")
+		}
+		if diff := diffMatchers(errs, []matcher.MatcherMismatch{
+			{Obj: o, Contains: &matcher.MismatchContains{c}},
+		}); diff != "" {
+			t.Error(diff)
 		}
 	})
 	t.Run("2.2-number-all-ok", func(t *testing.T) {
-		o := factory.Empty(source)
-		o.Add("e1", floats(1.5, 1.8))
+		ob := factory.Empty(source)
+		ob.Add("e1", floats(1.5, 1.8))
 		c := &srule.ContainsMatcher{
 			Operation: srule.ContainsAll,
 			Count:     false,
@@ -86,13 +95,14 @@ func Test_IsContainsMatch(t *testing.T) {
 				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
 			},
 		}
-		if !matcher.IsContainsMatch(o.Seal(), c) {
-			t.Error("did not match")
+		o := ob.Seal()
+		if ok, errs := matcher.IsContainsMatch(o, c); !ok {
+			t.Errorf("did not match: %v", errs)
 		}
 	})
 	t.Run("2.2-number-all-fail", func(t *testing.T) {
-		o := factory.Empty(source)
-		o.Add("e1", floats(2.2, -1.0))
+		ob := factory.Empty(source)
+		ob.Add("e1", floats(2.2, -1.0))
 		c := &srule.ContainsMatcher{
 			Operation: srule.ContainsAll,
 			Count:     false,
@@ -103,13 +113,20 @@ func Test_IsContainsMatch(t *testing.T) {
 				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
 			},
 		}
-		if matcher.IsContainsMatch(o.Seal(), c) {
-			t.Error("incorrectly matched")
+		o := ob.Seal()
+		ok, errs := matcher.IsContainsMatch(o, c)
+		if ok {
+			t.Fatal("incorrectly matched")
+		}
+		if diff := diffMatchers(errs, []matcher.MatcherMismatch{
+			{Obj: o, Contains: &matcher.MismatchContains{c}},
+		}); diff != "" {
+			t.Error(diff)
 		}
 	})
 	t.Run("2.2-number-all-partial-fail", func(t *testing.T) {
-		o := factory.Empty(source)
-		o.Add("e1", floats(2.2, 1.1))
+		ob := factory.Empty(source)
+		ob.Add("e1", floats(2.2, 1.1))
 		c := &srule.ContainsMatcher{
 			Operation: srule.ContainsAll,
 			Count:     false,
@@ -120,13 +137,20 @@ func Test_IsContainsMatch(t *testing.T) {
 				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
 			},
 		}
-		if matcher.IsContainsMatch(o.Seal(), c) {
-			t.Error("incorrectly matched")
+		o := ob.Seal()
+		ok, err := matcher.IsContainsMatch(o, c)
+		if ok {
+			t.Fatal("incorrectly matched")
+		}
+		if diff := diffMatchers(err, []matcher.MatcherMismatch{
+			{Obj: o, Contains: &matcher.MismatchContains{c}},
+		}); diff != "" {
+			t.Error(diff)
 		}
 	})
 	t.Run("2.1-number-exact-partial-fail", func(t *testing.T) {
-		o := factory.Empty(source)
-		o.Add("e1", floats(2.2, 1.1))
+		ob := factory.Empty(source)
+		ob.Add("e1", floats(2.2, 1.1))
 		c := &srule.ContainsMatcher{
 			Operation: srule.ContainsExactly,
 			Count:     false,
@@ -137,12 +161,32 @@ func Test_IsContainsMatch(t *testing.T) {
 				// Text: []srule.StringCheck{{R: regexp.MustCompile("^a+$")}},
 			},
 		}
-		if matcher.IsContainsMatch(o.Seal(), c) {
-			t.Error("incorrectly matched")
+		o := ob.Seal()
+
+		ok, err := matcher.IsContainsMatch(o, c)
+		if ok {
+			t.Fatal("incorrectly matched")
+		}
+		if diff := diffMatchers(err, []matcher.MatcherMismatch{
+			{Obj: o, Collection: nil, Contains: &matcher.MismatchContains{c}},
+		}); diff != "" {
+			t.Error(diff)
 		}
 	})
 }
 
 func floats(v ...float64) obj.DescriptorValues {
 	return obj.DescriptorValues{Number: v}
+}
+
+func diffMatchers(actual, expected []matcher.MatcherMismatch) string {
+	actStr := make([]string, len(actual))
+	for i, a := range actual {
+		actStr[i] = a.String()
+	}
+	expStr := make([]string, len(expected))
+	for i, e := range expected {
+		expStr[i] = e.String()
+	}
+	return cmp.Diff(actStr, expStr)
 }

@@ -70,19 +70,32 @@ const (
 	Recursion
 )
 
-// Add adds the object to the SOG, and returns the instance + if it's a newly created instance.
+// Add adds the object to the SOG, and returns the performed add action.
 //
 // If the object does not match this builder, then it returns NoMatch.
 func (s *SogBuilder) Add(o *obj.EngineObj) SogBuilderAddResult {
+	return s.add(o, true)
+}
+
+// AddToExisting adds the object to an existing SOG instance.
+func (s *SogBuilder) AddToExisting(o *obj.EngineObj) SogBuilderAddResult {
+	return s.add(o, false)
+}
+
+func (s *SogBuilder) add(o *obj.EngineObj, allowCreate bool) SogBuilderAddResult {
 	if o == nil {
 		return NoMatch
 	}
-	if !matcher.IsMatch(o, s.rule.Matchers) {
+	if match, _ := matcher.IsMatch(o, s.rule.Matchers); !match {
 		return NoMatch
 	}
 	shared := groupSharedValues(s.rule, o)
 	si := s.matching(shared)
 	ret := Added
+	if !allowCreate && si == nil {
+		// Do not create a new instance.
+		return NoMatch
+	}
 	if si == nil {
 		ret = Created
 

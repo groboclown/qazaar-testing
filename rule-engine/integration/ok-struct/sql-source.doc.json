@@ -19,6 +19,7 @@
             "sources": [{"ref": "my/repo:sql/user.sql:2", "a": "line:11"}],
             "id": "field:user:name",
             "descriptors": [
+                {"key": "structure", "values": ["USER"]},
                 {"key": "data-type", "values": ["field"]},
                 {"key": "field-name", "values": ["NAME"]},
                 {"key": "field-type", "values": ["string"]},
@@ -29,6 +30,7 @@
             "sources": [{"ref": "my/repo:sql/user.sql:2", "a": "line:12"}],
             "id": "field:user:role",
             "descriptors": [
+                {"key": "structure", "values": ["USER"]},
                 {"key": "data-type", "values": ["field"]},
                 {"key": "field-name", "values": ["ROLE"]},
                 {"key": "field-type", "values": ["string"]},
@@ -39,6 +41,7 @@
             "sources": [{"ref": "my/repo:sql/user.sql:2", "a": "line:13"}],
             "id": "field:user:lastlogin",
             "descriptors": [
+                {"key": "structure", "values": ["USER"]},
                 {"key": "data-type", "values": ["field"]},
                 {"key": "field-name", "values": ["LASTLOGIN"]},
                 {"key": "field-type", "values": ["date-time"]},
@@ -49,6 +52,7 @@
             "sources": [{"ref": "my/repo:sql/user.sql:2", "a": "line:13"}],
             "id": "field:user:lastupdate",
             "descriptors": [
+                {"key": "structure", "values": ["USER"]},
                 {"key": "data-type", "values": ["field"]},
                 {"key": "field-name", "values": ["LASTUPDATE"]},
                 {"key": "field-type", "values": ["date-time"]},

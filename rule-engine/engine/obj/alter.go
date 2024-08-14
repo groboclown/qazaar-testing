@@ -9,6 +9,7 @@ import (
 
 type engineObjBuilder struct {
 	source ObjSource
+	id     string
 	ont    *sont.AllowedDescriptors
 
 	numeric map[string]descriptor.DescriptorValueBuilder[float64]
@@ -19,10 +20,12 @@ type engineObjBuilder struct {
 func newObjBuilder(
 	parents []*ObjSource,
 	construct *string,
+	id string,
 	source []sources.Source,
 	ont *sont.AllowedDescriptors,
 ) *engineObjBuilder {
 	return &engineObjBuilder{
+		id: id,
 		source: ObjSource{
 			Parents:   parents,
 			Construct: construct,
@@ -42,6 +45,7 @@ func (o *EngineObj) Alter() EngineObjBuilder {
 
 	return &engineObjBuilder{
 		source:  o.Source,
+		id:      o.Id, // Note: should probably make an indicator this was a modification
 		ont:     o.ont,
 		numeric: mutateDescriptorMap(o.Numeric),
 		enum:    mutateDescriptorMap(o.Enum),
@@ -141,6 +145,7 @@ func (o *engineObjBuilder) Seal() *EngineObj {
 		return nil
 	}
 	return &EngineObj{
+		Id:      o.id,
 		Source:  o.source,
 		Numeric: sealDescriptorMap(o.numeric),
 		Enum:    sealDescriptorMap(o.enum),

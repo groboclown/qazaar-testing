@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/groboclown/qazaar-testing/rule-engine/engine/matcher"
 	"github.com/groboclown/qazaar-testing/rule-engine/engine/obj"
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest/shared/sources"
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest/srule"
@@ -13,9 +14,10 @@ import (
 )
 
 type RuleProblem struct {
-	obj     *obj.EngineObj
-	rule    *srule.Rule
-	matcher *srule.LeveledMatcher
+	obj        *obj.EngineObj
+	rule       *srule.Rule
+	matcher    *srule.LeveledMatcher
+	violations []matcher.MatcherMismatch
 }
 
 type MemberValues struct {
@@ -58,12 +60,16 @@ func ruleAsProblem(
 }
 
 func ruleProblemMessage(prob *RuleProblem) string {
+	matchers := make([]string, len(prob.violations))
+	for i, v := range prob.violations {
+		matchers[i] = v.String()
+	}
 	return fmt.Sprintf(
 		"Rule %s violation (%s) for %s: %s",
 		prob.rule.Id,
 		prob.matcher.Level,
 		prob.obj.String(),
-		obj.ObjSource{Source: prob.matcher.Sources}.String(), // Comments instead?
+		strings.Join(matchers, ", "),
 	)
 }
 

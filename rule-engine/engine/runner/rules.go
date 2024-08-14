@@ -49,14 +49,15 @@ func checkAgainstRule(
 	rule *srule.Rule,
 	probs chan<- *RuleProblem,
 ) {
-	if matcher.IsMatch(o, rule.Matchers) {
+	if ok, _ := matcher.IsMatch(o, rule.Matchers); ok {
 		// The object must conform.
 		for _, c := range rule.Conformities {
-			if !matcher.IsMatch(o, c.Matchers) {
+			if matches, errs := matcher.IsMatch(o, c.Matchers); !matches {
 				probs <- &RuleProblem{
-					obj:     o,
-					rule:    rule,
-					matcher: &c,
+					obj:        o,
+					rule:       rule,
+					matcher:    &c,
+					violations: errs,
 				}
 			}
 		}

@@ -1,7 +1,13 @@
 // Under the Apache-2.0 License
 package obj
 
-import "github.com/groboclown/qazaar-testing/rule-engine/ingest/shared/descriptor"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+
+	"github.com/groboclown/qazaar-testing/rule-engine/ingest/shared/descriptor"
+)
 
 // Value returns a descriptor value list for the given key.
 //
@@ -53,7 +59,22 @@ func (o *EngineObj) CountValue(key string) DescriptorValues {
 }
 
 func (o *EngineObj) String() string {
-	return o.Source.String()
+	attribs := make([]string, 0)
+	for k, e := range o.Enum {
+		attribs = append(attribs, fmt.Sprintf("%s:%s", k, strings.Join(e.List(), ",")))
+	}
+	for k, f := range o.Free {
+		attribs = append(attribs, fmt.Sprintf("%s:%s", k, strings.Join(f.List(), ",")))
+	}
+	for k, n := range o.Numeric {
+		vals := n.List()
+		vs := make([]string, len(vals))
+		for i, v := range vals {
+			vs[i] = strconv.FormatFloat(v, 'f', 4, 64)
+		}
+		attribs = append(attribs, fmt.Sprintf("%s:%s", k, strings.Join(vs, ",")))
+	}
+	return o.Id + "(" + o.Source.String() + ")" + "{" + strings.Join(attribs, ";") + "}"
 }
 
 // Distinct turns the values into a distinct list of values.
@@ -79,14 +100,32 @@ func (d DescriptorValues) Count() int {
 }
 
 func (s ObjSource) String() string {
+	ret := ""
+	if s.Construct != nil {
+		ret = fmt.Sprintf("[%s] ", *s.Construct)
+	}
+	if len(s.Parents) > 0 {
+		first := true
+		ret = ret + "("
+		for _, p := range s.Parents {
+			if first {
+				first = false
+			} else {
+				ret = ret + ", "
+			}
+			ret = ret + p.String()
+		}
+		return ret + ")"
+	}
+
 	if len(s.Source) <= 0 {
-		return "?"
+		return ret + "?"
 	}
 	ver := s.Source[0].Ver()
 	a := s.Source[0].A()
 	rep := s.Source[0].Rep()
 
-	ret := s.Source[0].Loc()
+	ret = ret + s.Source[0].Loc()
 	if rep != "" {
 		ret = rep + ":" + ret
 	}

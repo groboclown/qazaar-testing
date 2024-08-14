@@ -7,7 +7,7 @@ import (
 	"github.com/groboclown/qazaar-testing/rule-engine/ingest/srule"
 )
 
-func IsMatch(obj *obj.EngineObj, matcher *srule.MatchingDescriptorSet) bool {
+func IsMatch(obj *obj.EngineObj, matcher *srule.MatchingDescriptorSet) (bool, []MatcherMismatch) {
 	return IsCollectionMatch(obj, srule.AndCollection, matcher)
 }
 
@@ -15,45 +15,77 @@ func IsCollectionMatch(
 	obj *obj.EngineObj,
 	operation srule.CollectionOperation,
 	matcher *srule.MatchingDescriptorSet,
-) bool {
+) (bool, []MatcherMismatch) {
 	if matcher == nil || obj == nil {
-		return false
+		return false, nil
 	}
 
 	// NOT operations should operate on just one item, but for optimization,
 	// this will just run the matcher with an AND rule, then return the
 	// opposite of that.
 	if operation == srule.NotCollection {
-		return !IsCollectionMatch(obj, srule.AndCollection, matcher)
+		ok, _ := IsCollectionMatch(obj, srule.AndCollection, matcher)
+		if !ok {
+			return true, nil
+		}
+		return false, []MatcherMismatch{{
+			Obj: obj,
+			Collection: &MismatchCollection{
+				Operation: operation,
+				Matcher:   matcher,
+			},
+		}}
 	}
 
 	// AND and OR logic is identical except for the matching condition
 	// for early loop exit.
+	// Note that, in the OR condition, this means an empty set of
+	// collections & contains turns into a false.  That's fine, as the sources
+	// shouldn't even allow that configuration.
+	// Also note that this logic is used for constraint validations; that
+	// implies that for the AND violations (early exit on false) means that some
+	// of the problems may not be revealed.
 	earlyExitCondition := false
 	if operation == srule.OrCollection {
 		earlyExitCondition = true
 	}
 
+	rErrs := make([]MatcherMismatch, 0)
 	for _, c := range matcher.Collection {
-		if earlyExitCondition == IsCollectionMatch(obj, c.Operation, c.Matchers) {
-			return earlyExitCondition
+		res, errs := IsCollectionMatch(obj, c.Operation, c.Matchers)
+		rErrs = append(rErrs, errs...)
+		if earlyExitCondition == res {
+			return earlyExitCondition, rErrs
 		}
 	}
 
 	for _, c := range matcher.Contains {
-		if earlyExitCondition == IsContainsMatch(obj, &c) {
-			return earlyExitCondition
+		res, errs := IsContainsMatch(obj, &c)
+		rErrs = append(rErrs, errs...)
+		if earlyExitCondition == res {
+			return earlyExitCondition, errs
 		}
 	}
-	return !earlyExitCondition
+	if !earlyExitCondition && len(rErrs) <= 0 {
+		// If this returns a no-match, then ensure the
+		// results include why it's a no-match.
+		rErrs = append(rErrs, MatcherMismatch{
+			Obj: obj,
+			Collection: &MismatchCollection{
+				Operation: operation,
+				Matcher:   matcher,
+			},
+		})
+	}
+	return !earlyExitCondition, rErrs
 }
 
 func IsContainsMatch(
 	obj *obj.EngineObj,
 	contains *srule.ContainsMatcher,
-) bool {
+) (bool, []MatcherMismatch) {
 	if contains == nil || obj == nil {
-		return false
+		return false, []MatcherMismatch{}
 	}
 
 	val, distinct := obj.Value(contains.Key)
@@ -66,13 +98,18 @@ func IsContainsMatch(
 	}
 
 	if listMatch(contains.Operation, val.Number, contains.Checks.Numeric, numericCheckConst) {
-		return true
+		return true, nil
 	}
 	if listMatch(contains.Operation, val.Text, contains.Checks.Text, stringCheckConst) {
-		return true
+		return true, nil
 	}
 
-	return false
+	return false, []MatcherMismatch{{
+		Obj: obj,
+		Contains: &MismatchContains{
+			Contains: contains,
+		},
+	}}
 }
 
 func listMatch[T descriptor.DescriptorValueTypes, C srule.NumericBoundsCheck | srule.StringCheck](

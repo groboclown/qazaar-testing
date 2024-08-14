@@ -35,6 +35,7 @@ type DescriptorValues struct {
 // These may come either directly from a source, or the engine may construct it
 // based on rules.
 type EngineObj struct {
+	Id     string
 	Source ObjSource
 
 	// Note: though these are modifiable values, treat them as read-only once

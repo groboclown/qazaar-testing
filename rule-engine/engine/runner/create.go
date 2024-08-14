@@ -56,7 +56,8 @@ func (e *engineRunner) Start(ctx context.Context) (EngineState, problem.ProblemC
 
 	return &engineRunnerState{
 		engine:   e,
-		objects:  e.base,
+		newObj:   e.base,
+		prevObj:  nil,
 		sogs:     sogs,
 		problems: adder,
 	}, consumer

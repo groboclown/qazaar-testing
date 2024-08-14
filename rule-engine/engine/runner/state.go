@@ -14,11 +14,16 @@ type engineRunnerState struct {
 	engine   *engineRunner
 	sogs     []*sog.SogBuilder
 	problems problem.Adder
-	objects  []*obj.EngineObj
+	newObj   []*obj.EngineObj
+	prevObj  []*obj.EngineObj
+	stopped  bool
 }
 
 func (s *engineRunnerState) Stop() {
-	s.problems.Complete()
+	if !s.stopped {
+		s.stopped = true
+		s.problems.Complete()
+	}
 }
 
 func (s *engineRunnerState) Step() bool {
@@ -43,8 +48,24 @@ func (s *engineRunnerState) Step() bool {
 			// based on a new object.  If an old object creates a new sog, then
 			// it should not be allowed.
 			builder.Reset()
-			for _, o := range s.objects {
-				builder.Add(o)
+			stale := true
+			for _, o := range s.newObj {
+				if s := builder.Add(o); s == sog.Created {
+					stale = false
+				}
+			}
+
+			if stale {
+				// This rule doesn't have any groups associated with new objects.
+				// That means running over the old objects will just re-create already
+				// discovered objects, and will put this into an infinite loop.
+				return
+			}
+
+			// For the previous objects, only add them to groups created from
+			// new objects.
+			for _, o := range s.prevObj {
+				builder.AddToExisting(o)
 			}
 
 			// Once the SOGs are gathered...
@@ -75,11 +96,11 @@ func (s *engineRunnerState) Step() bool {
 	// Wait for the async build to complete, then wrap up the async.
 	wg.Wait()
 	close(newObjCh)
-	addedObj := <-joinedCh
-	s.objects = append(s.objects, addedObj...)
+	s.prevObj = append(s.prevObj, s.newObj...)
+	s.newObj = <-joinedCh
 
 	// Return 'false' if no more SOG objects were created.
-	added := len(addedObj) > 0
+	added := len(s.newObj) > 0
 	if !added {
 		s.Stop()
 	}

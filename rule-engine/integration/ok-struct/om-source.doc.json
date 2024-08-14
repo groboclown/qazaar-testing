@@ -20,6 +20,7 @@
             "sources": [{"ref": "my/repo:om/User.java:1", "a": "line:76"}],
             "id": "field:om.User:Name",
             "descriptors": [
+                {"key": "structure", "values": ["User"]},
                 {"key": "data-type", "values": ["field"]},
                 {"key": "field-name", "values": ["name"]},
                 {"key": "field-type", "values": ["string"]},
@@ -30,6 +31,7 @@
             "sources": [{"ref": "my/repo:om/User.java:1", "a": "line:84"}],
             "id": "field:om.User:Role",
             "descriptors": [
+                {"key": "structure", "values": ["User"]},
                 {"key": "data-type", "values": ["field"]},
                 {"key": "field-name", "values": ["role"]},
                 {"key": "field-type", "values": ["string"]},
@@ -40,6 +42,7 @@
             "sources": [{"ref": "my/repo:om/User.java:1", "a": "line:99"}],
             "id": "field:om.User:LastLogin",
             "descriptors": [
+                {"key": "structure", "values": ["User"]},
                 {"key": "data-type", "values": ["field"]},
                 {"key": "field-name", "values": ["lastlogin"]},
                 {"key": "field-type", "values": ["date-time"]},

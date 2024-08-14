@@ -19,6 +19,7 @@
             "sources": [{"ref": "my/repo:restapi.json:1", "a": "line:76"}],
             "id": "api:/user:GET:field:name",
             "descriptors": [
+                {"key": "structure", "values": ["user"]},
                 {"key": "data-type", "values": ["field"]},
                 {"key": "field-name", "values": ["name"]},
                 {"key": "field-type", "values": ["string"]},
@@ -29,6 +30,7 @@
             "sources": [{"ref": "my/repo:restapi.json:1", "a": "line:84"}],
             "id": "api:/user:GET:field:role",
             "descriptors": [
+                {"key": "structure", "values": ["user"]},
                 {"key": "data-type", "values": ["field"]},
                 {"key": "field-name", "values": ["role"]},
                 {"key": "field-type", "values": ["string"]},
@@ -39,6 +41,7 @@
             "sources": [{"ref": "my/repo:restapi.json:1", "a": "line:99"}],
             "id": "api:/user:GET:field:lastlogin",
             "descriptors": [
+                {"key": "structure", "values": ["user"]},
                 {"key": "data-type", "values": ["field"]},
                 {"key": "field-name", "values": ["lastlogin"]},
                 {"key": "field-type", "values": ["date-time"]},
