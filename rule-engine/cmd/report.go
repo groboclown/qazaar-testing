@@ -28,27 +28,35 @@ func ReportProblems(probs *problem.ProblemSet, out io.Writer) error {
 	errs = append(errs, e)
 
 	if len(quiet) > 0 {
-		fmt.Fprint(out, "Quiet:\n")
+		_, e := fmt.Fprint(out, "Quiet:\n")
+		errs = append(errs, e)
 		for _, p := range quiet {
-			fmt.Fprintf(out, "  %s\n", p.String())
+			_, e := fmt.Fprintf(out, "  %s\n", p.String())
+			errs = append(errs, e)
 		}
 	}
 	if len(info) > 0 {
-		fmt.Fprint(out, "Informative:\n")
+		_, e := fmt.Fprint(out, "Informative:\n")
+		errs = append(errs, e)
 		for _, p := range info {
-			fmt.Fprintf(out, "  %s\n", p.String())
+			_, e := fmt.Fprintf(out, "  %s\n", p.String())
+			errs = append(errs, e)
 		}
 	}
 	if len(warn) > 0 {
-		fmt.Fprint(out, "Warnings:\n")
+		_, e := fmt.Fprint(out, "Warnings:\n")
+		errs = append(errs, e)
 		for _, p := range warn {
-			fmt.Fprintf(out, "  %s\n", p.String())
+			_, e := fmt.Fprintf(out, "  %s\n", p.String())
+			errs = append(errs, e)
 		}
 	}
 	if len(err) > 0 {
-		fmt.Fprint(out, "Errors:\n")
+		_, e := fmt.Fprint(out, "Errors:\n")
+		errs = append(errs, e)
 		for _, p := range err {
-			fmt.Fprintf(out, "  %s\n", p.String())
+			_, e := fmt.Fprintf(out, "  %s\n", p.String())
+			errs = append(errs, e)
 		}
 	}
 

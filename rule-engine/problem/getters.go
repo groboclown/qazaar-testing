@@ -13,6 +13,10 @@ func (ps *ProblemSet) Errors() []Problem {
 	return ps.ProblemsAt(Err)
 }
 
+func (ps *ProblemSet) HasErrors() bool {
+	return len(ps.ProblemsAt(Err)) > 0
+}
+
 func (ps *ProblemSet) ProblemsAt(level ProblemLevel) []Problem {
 	if ps == nil {
 		return nil
